@@ -3,8 +3,8 @@ import {
   BG_COLOR,
   BOUNCE,
   DUST_PARTICLE_COUNT,
-  ENTRY_DELAY_PER_LETTER,
-  ENTRY_SCALE_LERP,
+  ENTRY_FADE_LERP,
+  ENTRY_Y_OFFSET,
   FRICTION,
   GRAVITY,
   GROUND_COLOR,
@@ -88,16 +88,14 @@ export function useLetterPhysics(
     let x = (width - totalWidth) / 2
     const y = height / 2
 
-    let letterIndex = 0
     for (const char of name) {
       const charWidth = ctx.measureText(char).width
       if (char !== ' ') {
         const posX = x + charWidth / 2
-        const entryDelay = letterIndex * ENTRY_DELAY_PER_LETTER
         letters.push({
           char,
           x: posX,
-          y: y,
+          y: isFirstLoad ? y + ENTRY_Y_OFFSET : y,
           homeX: posX,
           homeY: y,
           vx: 0,
@@ -110,12 +108,12 @@ export function useLetterPhysics(
           grabbed: false,
           restlessness: 0,
           hovered: false,
-          scale: isFirstLoad ? 0 : 1,
+          scale: 1,
+          opacity: isFirstLoad ? 0 : 1,
           breatheOffset: Math.random() * Math.PI * 2,
-          entryDelay,
+          entryDelay: 0,
           entered: !isFirstLoad,
         })
-        letterIndex++
       }
       x += charWidth
     }
@@ -133,18 +131,18 @@ export function useLetterPhysics(
 
       timeRef.current += 0.016
 
-      // Handle entry animation - staggered scale in
+      // Handle entry animation - fade up from bottom (all at once)
       for (const letter of lettersRef.current) {
-        if (!letter.entered && timeRef.current > letter.entryDelay) {
+        if (!letter.entered) {
           letter.entered = true
         }
-        if (
-          letter.entered &&
-          !letter.active &&
-          !letter.grabbed &&
-          !letter.hovered
-        ) {
-          letter.scale += (1 - letter.scale) * ENTRY_SCALE_LERP
+        if (letter.opacity < 1 && !letter.active && !letter.grabbed) {
+          letter.opacity += (1 - letter.opacity) * ENTRY_FADE_LERP
+          letter.y += (letter.homeY - letter.y) * ENTRY_FADE_LERP
+          if (letter.opacity > 0.99) {
+            letter.opacity = 1
+            letter.y = letter.homeY
+          }
         }
       }
 
@@ -410,12 +408,13 @@ export function useLetterPhysics(
         ctx.translate(letter.x, letter.y)
         ctx.rotate(letter.rotation)
         ctx.scale(letter.scale, letter.scale)
+        ctx.globalAlpha = letter.opacity
 
         if (letter.hovered || letter.active || letter.grabbed) {
           const shadowIntensity = letter.hovered ? 0.2 : 0.15
           const shadowBlur = letter.hovered ? 16 : 12
           const shadowY = letter.hovered ? 6 : 4
-          ctx.shadowColor = `rgba(28, 25, 23, ${shadowIntensity})`
+          ctx.shadowColor = `rgba(28, 25, 23, ${shadowIntensity * letter.opacity})`
           ctx.shadowBlur = shadowBlur
           ctx.shadowOffsetX = 2
           ctx.shadowOffsetY = shadowY

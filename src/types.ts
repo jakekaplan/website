@@ -20,6 +20,7 @@ export interface Letter {
   restlessness: number
   hovered: boolean
   scale: number
+  opacity: number
   breatheOffset: number
   entryDelay: number
   entered: boolean

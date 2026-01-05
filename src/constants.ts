@@ -14,10 +14,10 @@ export const MAX_RESTLESSNESS = 1
 
 // Animation
 export const DUST_PARTICLE_COUNT = 100
-export const ENTRY_DELAY_PER_LETTER = 0.05
 export const HOVER_SCALE = 1.08
 export const SCALE_LERP = 0.15
-export const ENTRY_SCALE_LERP = 0.12
+export const ENTRY_FADE_LERP = 0.08
+export const ENTRY_Y_OFFSET = 30
 
 // Layout
 export const GROUND_OFFSET = 48
