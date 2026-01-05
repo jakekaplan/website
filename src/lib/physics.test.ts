@@ -32,6 +32,7 @@ function createLetter(overrides: Partial<Letter> = {}): Letter {
     opacity: 1,
     entered: true,
     entryDelay: 0,
+    weight: 700,
     ...overrides,
   }
 }

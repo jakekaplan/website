@@ -23,6 +23,7 @@ export interface Letter {
   opacity: number
   entered: boolean
   entryDelay: number
+  weight: number
 }
 
 export interface DustParticle {

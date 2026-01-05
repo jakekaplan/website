@@ -16,12 +16,6 @@ function HomePage() {
         }}
       />
 
-      {/* Corner marks for that design studio feel */}
-      <div className="corner-mark corner-mark--tl" />
-      <div className="corner-mark corner-mark--tr" />
-      <div className="corner-mark corner-mark--bl" />
-      <div className="corner-mark corner-mark--br" />
-
       <header className="header">
         <div className="social">
           <a href="mailto:jakegkaplan@gmail.com" aria-label="Email">
@@ -50,13 +44,6 @@ function HomePage() {
             </svg>
           </a>
         </div>
-      </header>
-
-      <footer className="footer">
-        <p className="hint">
-          <span />
-          Drag letters or press space
-        </p>
 
         <button type="button" className="reset" onClick={reset} title="Reset">
           <svg
@@ -69,8 +56,14 @@ function HomePage() {
             <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
             <path d="M3 3v5h5" />
           </svg>
-          Reset
         </button>
+      </header>
+
+      <footer className="footer">
+        <p className="hint">
+          <span />
+          Drag letters or press space
+        </p>
       </footer>
     </div>
   )

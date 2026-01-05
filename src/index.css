@@ -173,15 +173,10 @@ body::after {
   left: 0;
   right: 0;
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  padding: 1.5rem 2rem;
+  align-items: center;
+  padding: 0 2rem;
+  height: 48px;
   z-index: 10;
-  pointer-events: none;
-}
-
-.footer > * {
-  pointer-events: auto;
 }
 
 /* Hint text */
@@ -207,83 +202,38 @@ body::after {
 
 /* Reset button */
 .reset {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1rem;
-  border: 1px solid var(--grid-color);
-  border-radius: 100px;
-  background: var(--bg-primary);
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
   color: var(--ink-muted);
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  letter-spacing: 0.03em;
   cursor: pointer;
   transition:
     color 0.3s var(--ease-out),
     background 0.3s var(--ease-out),
     border-color 0.3s var(--ease-out),
-    box-shadow 0.3s var(--ease-out),
     transform 0.3s var(--ease-spring);
   opacity: 0;
-  animation: fadeSlideIn 0.6s var(--ease-out) 0.5s forwards;
+  animation: fadeSlideIn 0.6s var(--ease-out) 0.4s forwards;
 }
 
 .reset:hover {
   color: var(--ink);
   background: var(--bg-secondary);
-  border-color: rgba(28, 25, 23, 0.1);
-  box-shadow: var(--shadow-sm);
-  transform: translateY(-1px);
+  border-color: var(--grid-color);
+  transform: translateY(-2px);
 }
 
 .reset:active {
-  transform: translateY(0) scale(0.98);
+  transform: translateY(0) scale(0.95);
 }
 
 .reset svg {
-  width: 14px;
-  height: 14px;
-}
-
-/* Decorative corner marks */
-.corner-mark {
-  position: fixed;
-  width: 24px;
-  height: 24px;
-  border: 1px solid var(--grid-color);
-  pointer-events: none;
-  z-index: 5;
-  opacity: 0;
-  animation: fadeIn 1s var(--ease-out) 0.8s forwards;
-}
-
-.corner-mark--tl {
-  top: 2rem;
-  left: 2rem;
-  border-right: none;
-  border-bottom: none;
-}
-
-.corner-mark--tr {
-  top: 2rem;
-  right: 2rem;
-  border-left: none;
-  border-bottom: none;
-}
-
-.corner-mark--bl {
-  bottom: 2rem;
-  left: 2rem;
-  border-right: none;
-  border-top: none;
-}
-
-.corner-mark--br {
-  bottom: 2rem;
-  right: 2rem;
-  border-left: none;
-  border-top: none;
+  width: 18px;
+  height: 18px;
 }
 
 /* Animations */
@@ -321,9 +271,12 @@ body::after {
 
 /* Mobile adjustments */
 @media (max-width: 640px) {
-  .header,
-  .footer {
+  .header {
     padding: 1rem 1.25rem;
+  }
+
+  .footer {
+    padding: 0 1.25rem;
   }
 
   .tagline {

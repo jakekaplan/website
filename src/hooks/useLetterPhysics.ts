@@ -52,7 +52,8 @@ export function useLetterPhysics(
   )
 
   const initLetters = useCallback((width: number, height: number) => {
-    const name = 'Jake Kaplan'
+    const firstName = 'Jake'
+    const lastName = 'Kaplan'
     const fontSize = Math.min(80, width / 7)
     const letters: Letter[] = []
     const isFirstLoad = !entryAnimationRef.current
@@ -60,41 +61,83 @@ export function useLetterPhysics(
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
     if (!ctx) return
-    ctx.font = `500 ${fontSize}px 'DM Mono', monospace`
 
-    const totalWidth = ctx.measureText(name).width
+    // Measure total width with mixed weights
+    ctx.font = `800 ${fontSize}px 'Syne', sans-serif`
+    const firstNameWidth = ctx.measureText(firstName).width
+    ctx.font = `400 ${fontSize}px 'Syne', sans-serif`
+    const lastNameWidth = ctx.measureText(lastName).width
+    const spaceWidth = ctx.measureText(' ').width
+
+    const totalWidth = firstNameWidth + spaceWidth + lastNameWidth
     let x = (width - totalWidth) / 2
     const y = height / 2
 
     let letterIndex = 0
-    for (const char of name) {
+
+    // First name - bold
+    ctx.font = `800 ${fontSize}px 'Syne', sans-serif`
+    for (const char of firstName) {
       const charWidth = ctx.measureText(char).width
-      if (char !== ' ') {
-        const posX = x + charWidth / 2
-        letters.push({
-          char,
-          x: posX,
-          y: isFirstLoad ? y + ENTRY_Y_OFFSET : y,
-          homeX: posX,
-          homeY: y,
-          vx: 0,
-          vy: 0,
-          rotation: 0,
-          rotationSpeed: 0,
-          width: charWidth,
-          height: fontSize,
-          active: false,
-          grabbed: false,
-          restlessness: 0,
-          hovered: false,
-          scale: 1,
-          opacity: isFirstLoad ? 0 : 1,
-          entered: !isFirstLoad,
-          entryDelay: letterIndex * ENTRY_STAGGER,
-        })
-        letterIndex++
-      }
+      const posX = x + charWidth / 2
+      letters.push({
+        char,
+        x: posX,
+        y: isFirstLoad ? y + ENTRY_Y_OFFSET : y,
+        homeX: posX,
+        homeY: y,
+        vx: 0,
+        vy: 0,
+        rotation: 0,
+        rotationSpeed: 0,
+        width: charWidth,
+        height: fontSize,
+        active: false,
+        grabbed: false,
+        restlessness: 0,
+        hovered: false,
+        scale: 1,
+        opacity: isFirstLoad ? 0 : 1,
+        entered: !isFirstLoad,
+        entryDelay: letterIndex * ENTRY_STAGGER,
+        weight: 800,
+      })
       x += charWidth
+      letterIndex++
+    }
+
+    // Space
+    x += spaceWidth
+
+    // Last name - light
+    ctx.font = `400 ${fontSize}px 'Syne', sans-serif`
+    for (const char of lastName) {
+      const charWidth = ctx.measureText(char).width
+      const posX = x + charWidth / 2
+      letters.push({
+        char,
+        x: posX,
+        y: isFirstLoad ? y + ENTRY_Y_OFFSET : y,
+        homeX: posX,
+        homeY: y,
+        vx: 0,
+        vy: 0,
+        rotation: 0,
+        rotationSpeed: 0,
+        width: charWidth,
+        height: fontSize,
+        active: false,
+        grabbed: false,
+        restlessness: 0,
+        hovered: false,
+        scale: 1,
+        opacity: isFirstLoad ? 0 : 1,
+        entered: !isFirstLoad,
+        entryDelay: letterIndex * ENTRY_STAGGER,
+        weight: 400,
+      })
+      x += charWidth
+      letterIndex++
     }
 
     if (isFirstLoad) {
@@ -214,11 +257,11 @@ export function useLetterPhysics(
       ctx.stroke()
 
       const fontSize = Math.min(80, width / 7)
-      ctx.font = `500 ${fontSize}px 'DM Mono', monospace`
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
 
       for (const letter of lettersRef.current) {
+        ctx.font = `${letter.weight} ${fontSize}px 'Syne', sans-serif`
         ctx.save()
         ctx.translate(letter.x, letter.y)
         ctx.rotate(letter.rotation)
