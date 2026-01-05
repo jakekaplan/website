@@ -98,7 +98,7 @@ function HomePage() {
       </header>
 
       <p className={`hint-centered ${showHint ? 'visible' : ''}`}>
-        Drag letters or press space
+        Fling letters or press space
       </p>
 
       <footer className="footer">
