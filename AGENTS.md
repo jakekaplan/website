@@ -58,14 +58,17 @@ Light/dark mode with theme-specific brush strokes:
 - Light: warm cream background, orange accent, `warm-brush-stroke.png`
 - Dark: navy background, teal accent, `cool-brush-stroke.png`
 
-**Keep colors in sync:** Theme colors are defined in two places:
-- `constants.ts` → `THEME` object (for canvas rendering)
+Theme colors are defined in two places that must stay in sync:
+- `constants.ts` → `THEME` object (for canvas rendering, includes brush stroke paths)
 - `index.css` → CSS variables in `:root` and `:root[data-theme="dark"]`
 
-When updating colors, update both files.
+The `constants.ts` values have inline comments showing their CSS variable counterparts.
 
-## Notes
+## Code Patterns
 
-- Physics constants live in `constants.ts` - modify there, not inline
-- `lib/` contains pure functions; `useKineticName.ts` orchestrates the render loop
-- Tests exist for `lib/physics.ts` and `lib/particles.ts`
+- **Pure functions in `lib/`** - physics, particles, render are stateless and testable
+- **Hook orchestrates** - `useKineticName` owns refs and the animation loop, delegates to `lib/`
+- **Types in `types.ts`** - domain types (Letter, Particle, etc.) are centralized
+- **Constants in `constants.ts`** - no magic numbers inline
+
+When adding new functionality, prefer pure functions in `lib/` over adding complexity to hooks.
