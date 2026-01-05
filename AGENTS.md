@@ -1,6 +1,14 @@
 # Jake Kaplan Personal Website
 
-Interactive kinetic typography with canvas-based physics. Letters are draggable with gravity, collision, and return-to-home behavior.
+Personal website for Jake Kaplan, software engineer. Currently features an interactive kinetic name animation on the homepage, with plans to expand into side projects and blog posts.
+
+## Style
+
+Warm minimalist aesthetic with an ambient, organic feel. The brush stroke motif evokes a calligraphic, hand-drawn quality. Clean and understated with subtle interactive depth.
+
+## Kinetic Name Feature
+
+The homepage features interactive typography where letters behave as physical objects—draggable with gravity, collision, and return-to-home behavior.
 
 ## Structure
 
