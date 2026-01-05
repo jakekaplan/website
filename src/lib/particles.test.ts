@@ -1,38 +1,11 @@
 import { DUST_PARTICLE_COUNT } from '@/constants'
-import type { CollisionParticle, Letter } from '@/types'
 import {
   createCollisionParticles,
   createDustParticles,
-  isParticleAlive,
-  updateCollisionParticle,
-  updateDustParticle,
+  updateAllDust,
+  updateCollisionParticles,
 } from './particles'
-
-function createLetter(overrides: Partial<Letter> = {}): Letter {
-  return {
-    char: 'A',
-    x: 0,
-    y: 0,
-    homeX: 0,
-    homeY: 0,
-    vx: 0,
-    vy: 0,
-    rotation: 0,
-    rotationSpeed: 0,
-    width: 50,
-    height: 80,
-    active: false,
-    grabbed: false,
-    restlessness: 0,
-    hovered: false,
-    scale: 1,
-    opacity: 1,
-    entered: true,
-    entryDelay: 0,
-    weight: 700,
-    ...overrides,
-  }
-}
+import { createLetter } from './test-utils'
 
 describe('createDustParticles', () => {
   it('creates the correct number of dust particles', () => {
@@ -90,9 +63,9 @@ describe('createCollisionParticles', () => {
   })
 })
 
-describe('updateDustParticle', () => {
-  it('moves particle based on speed', () => {
-    const dust = {
+describe('updateAllDust', () => {
+  it('moves particles based on speed', () => {
+    const particle = {
       x: 100,
       y: 100,
       size: 2,
@@ -101,17 +74,17 @@ describe('updateDustParticle', () => {
       speedY: 1,
       drift: 0,
     }
-    const initialX = dust.x
-    const initialY = dust.y
+    const initialX = particle.x
+    const initialY = particle.y
 
-    updateDustParticle(dust, [], 0, 800, 600)
+    updateAllDust([particle], [], 0, 800, 600)
 
-    expect(dust.x).not.toBe(initialX)
-    expect(dust.y).not.toBe(initialY)
+    expect(particle.x).not.toBe(initialX)
+    expect(particle.y).not.toBe(initialY)
   })
 
   it('applies wake turbulence from moving letters', () => {
-    const dust = {
+    const particle = {
       x: 110,
       y: 100,
       size: 2,
@@ -122,13 +95,13 @@ describe('updateDustParticle', () => {
     }
     const letter = createLetter({ x: 100, y: 100, vx: 10, vy: 0, active: true })
 
-    updateDustParticle(dust, [letter], 0, 800, 600)
+    updateAllDust([particle], [letter], 0, 800, 600)
 
-    expect(dust.speedX).not.toBe(0)
+    expect(particle.speedX).not.toBe(0)
   })
 
   it('wraps particles around screen edges', () => {
-    const dust = {
+    const particle = {
       x: -20,
       y: 100,
       size: 2,
@@ -138,15 +111,15 @@ describe('updateDustParticle', () => {
       drift: 0,
     }
 
-    updateDustParticle(dust, [], 0, 800, 600)
+    updateAllDust([particle], [], 0, 800, 600)
 
-    expect(dust.x).toBeGreaterThan(0)
+    expect(particle.x).toBeGreaterThan(0)
   })
 })
 
-describe('updateCollisionParticle', () => {
-  it('moves particle based on velocity', () => {
-    const particle: CollisionParticle = {
+describe('updateCollisionParticles', () => {
+  it('moves particles based on velocity', () => {
+    const particle = {
       x: 100,
       y: 100,
       vx: 5,
@@ -156,14 +129,14 @@ describe('updateCollisionParticle', () => {
       life: 1,
     }
 
-    updateCollisionParticle(particle)
+    updateCollisionParticles([particle])
 
     expect(particle.x).toBe(105)
     expect(particle.y).toBe(95)
   })
 
-  it('applies gravity to particle', () => {
-    const particle: CollisionParticle = {
+  it('applies gravity to particles', () => {
+    const particle = {
       x: 100,
       y: 100,
       vx: 0,
@@ -173,54 +146,19 @@ describe('updateCollisionParticle', () => {
       life: 1,
     }
 
-    updateCollisionParticle(particle)
+    updateCollisionParticles([particle])
 
     expect(particle.vy).toBeGreaterThan(0)
   })
 
-  it('decreases life over time', () => {
-    const particle: CollisionParticle = {
-      x: 100,
-      y: 100,
-      vx: 0,
-      vy: 0,
-      size: 2,
-      opacity: 0.5,
-      life: 1,
-    }
+  it('filters out dead particles', () => {
+    const particles = [
+      { x: 0, y: 0, vx: 0, vy: 0, size: 1, opacity: 0.5, life: 0.5 },
+      { x: 0, y: 0, vx: 0, vy: 0, size: 1, opacity: 0, life: 0 },
+    ]
 
-    updateCollisionParticle(particle)
+    const result = updateCollisionParticles(particles)
 
-    expect(particle.life).toBeLessThan(1)
-  })
-})
-
-describe('isParticleAlive', () => {
-  it('returns true when life is positive', () => {
-    const particle: CollisionParticle = {
-      x: 0,
-      y: 0,
-      vx: 0,
-      vy: 0,
-      size: 1,
-      opacity: 0.5,
-      life: 0.5,
-    }
-
-    expect(isParticleAlive(particle)).toBe(true)
-  })
-
-  it('returns false when life is zero or negative', () => {
-    const particle: CollisionParticle = {
-      x: 0,
-      y: 0,
-      vx: 0,
-      vy: 0,
-      size: 1,
-      opacity: 0,
-      life: 0,
-    }
-
-    expect(isParticleAlive(particle)).toBe(false)
+    expect(result).toHaveLength(1)
   })
 })

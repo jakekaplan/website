@@ -44,11 +44,9 @@ export function useCanvas(
   const colors = THEME[theme]
   const { lettersVisible, resetKey, setIsAtRest } = useCanvasContext()
 
-  // UI state for cursor
   const [isHovering, setIsHovering] = useState(false)
   const [isGrabbing, setIsGrabbing] = useState(false)
 
-  // Animation state refs (persistent across renders)
   const dustRef = useRef<DustParticle[]>([])
   const lettersRef = useRef<Letter[]>([])
   const collisionParticlesRef = useRef<CollisionParticle[]>([])
@@ -63,12 +61,10 @@ export function useCanvas(
   const wasActiveRef = useRef(false)
   const fadeStateRef = useRef<FadeState>('hidden')
 
-  // Interaction refs (stable across renders)
   const grabbedRef = useRef<Letter | null>(null)
   const offsetRef = useRef<Point>({ x: 0, y: 0 })
   const lastPosRef = useRef<Point | null>(null)
 
-  // Handler refs (stable references for event listeners)
   const grabRef = useRef<(pos: Point) => void>(() => {})
   const dragRef = useRef<(pos: Point) => void>(() => {})
   const releaseRef = useRef<() => void>(() => {})
@@ -77,7 +73,6 @@ export function useCanvas(
   const colorsRef = useRef(colors)
   colorsRef.current = colors
 
-  // Load brush stroke on theme change
   useEffect(() => {
     const img = new Image()
     img.src = colors.brushStroke
@@ -86,12 +81,10 @@ export function useCanvas(
     }
   }, [colors.brushStroke])
 
-  // Reset everything when resetKey changes
   useEffect(() => {
     if (resetKey === 0) return
     const { width, height } = sizeRef.current
     if (width > 0) {
-      // Reset letters to home positions
       for (const letter of lettersRef.current) {
         letter.x = letter.homeX
         letter.y = letter.homeY
@@ -108,11 +101,9 @@ export function useCanvas(
     }
   }, [resetKey])
 
-  // Handle visibility changes with state machine
   useEffect(() => {
     const state = fadeStateRef.current
     if (lettersVisible && (state === 'hidden' || state === 'exiting')) {
-      // Start entering
       const { width, height } = sizeRef.current
       if (width === 0) return
 
@@ -155,7 +146,6 @@ export function useCanvas(
     }
   }, [lettersVisible])
 
-  // Stable interaction handlers - update refs for use in event listeners
   const hitTest = (pos: Point): Letter | null => {
     for (let i = lettersRef.current.length - 1; i >= 0; i--) {
       const letter = lettersRef.current[i]
@@ -166,7 +156,6 @@ export function useCanvas(
 
   const canInteract = () => fadeStateRef.current === 'visible'
 
-  // Update handler refs on each render (these are called by stable event listeners)
   grabRef.current = (pos: Point) => {
     if (!canInteract()) return
     const letter = hitTest(pos)
@@ -237,7 +226,6 @@ export function useCanvas(
     }
   }
 
-  // Main animation loop - set up once
   useEffect(() => {
     const canvas = canvasRef.current
     if (!canvas) return
@@ -259,7 +247,6 @@ export function useCanvas(
       const oldSize = sizeRef.current
       sizeRef.current = { width: w, height: h }
 
-      // Scale dust positions proportionally
       if (oldSize.width > 0) {
         const scaleX = w / oldSize.width
         const scaleY = h / oldSize.height
@@ -269,7 +256,6 @@ export function useCanvas(
         }
       }
 
-      // Reposition letters using cached layout ratios
       if (lettersRef.current.length > 0 && layoutRef.current) {
         const newLayout = measureNameLayout(w, h)
         layoutRef.current = newLayout
@@ -293,12 +279,10 @@ export function useCanvas(
 
     const { width, height } = resize()
 
-    // Initialize dust once
     if (dustRef.current.length === 0) {
       dustRef.current = createDustParticles(width, height)
     }
 
-    // Event handlers - call through refs for latest handlers
     const getPos = (e: MouseEvent | Touch): Point => ({
       x: e.clientX,
       y: e.clientY,
@@ -374,21 +358,17 @@ export function useCanvas(
       const { width: w, height: h } = sizeRef.current
       timeRef.current += 0.016
 
-      // Update dust (always runs)
       const letters =
         fadeStateRef.current !== 'hidden' ? lettersRef.current : null
       updateAllDust(dustRef.current, letters, timeRef.current, w, h)
 
-      // Handle fade transitions
       updateFadeState()
       if (lettersRef.current.length === 0) return
 
-      // Update brush stroke and letters
       const elapsed = performance.now() - entryStartRef.current
       updateBrushStroke(elapsed)
       updateAllLetterEntries(lettersRef.current, elapsed)
 
-      // Collisions and physics
       const letterCollisions = findLetterCollisions(lettersRef.current)
       spawnParticles(
         letterCollisions.map((c) => ({
@@ -406,13 +386,11 @@ export function useCanvas(
       )
       spawnParticles(groundImpacts)
 
-      // Update rest state (only when changed)
       if (anyActive !== wasActiveRef.current) {
         wasActiveRef.current = anyActive
         setIsAtRest(!anyActive)
       }
 
-      // Update collision particles
       collisionParticlesRef.current = updateCollisionParticles(
         collisionParticlesRef.current,
       )
@@ -451,7 +429,6 @@ export function useCanvas(
       animationRef.current = requestAnimationFrame(animate)
     }
 
-    // Attach event listeners once
     window.addEventListener('resize', resize)
     window.addEventListener('keydown', onKeyDown)
     canvas.addEventListener('mousedown', onMouseDown)

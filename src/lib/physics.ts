@@ -229,7 +229,6 @@ function updateActiveLetter(
   return impactSpeed
 }
 
-/** Update entry animation for a single letter */
 function updateLetterEntry(letter: Letter, elapsed: number): void {
   if (letter.entered) return
 
@@ -250,7 +249,6 @@ function updateLetterEntry(letter: Letter, elapsed: number): void {
   }
 }
 
-/** Find all letter-letter collisions and return collision results */
 export function findLetterCollisions(letters: Letter[]): CollisionResult[] {
   const results: CollisionResult[] = []
   for (let i = 0; i < letters.length; i++) {
@@ -266,7 +264,6 @@ export function findLetterCollisions(letters: Letter[]): CollisionResult[] {
   return results
 }
 
-/** Update all letters physics and return results for particle spawning */
 export function updateAllLetters(
   letters: Letter[],
   groundY: number,
@@ -291,7 +288,6 @@ export function updateAllLetters(
   return { anyActive, groundImpacts }
 }
 
-/** Run entry animation on all letters */
 export function updateAllLetterEntries(
   letters: Letter[],
   elapsed: number,

@@ -1,7 +1,6 @@
 import { DUST_PARTICLE_COUNT } from '@/constants'
 import type { CollisionParticle, DustParticle, Letter } from '@/types'
 
-/** Update all dust particles */
 export function updateAllDust(
   dust: DustParticle[],
   letters: Letter[] | null,
@@ -60,7 +59,7 @@ export function createCollisionParticles(
   return particles
 }
 
-export function updateDustParticle(
+function updateDustParticle(
   dust: DustParticle,
   letters: Letter[] | null,
   time: number,
@@ -109,22 +108,17 @@ export function updateDustParticle(
   if (dust.y > height + 10) dust.y = -10
 }
 
-export function updateCollisionParticle(particle: CollisionParticle): void {
+function updateCollisionParticle(particle: CollisionParticle): void {
   particle.x += particle.vx
   particle.y += particle.vy
-  particle.vy += 0.1 // gravity
+  particle.vy += 0.1
   particle.life -= 0.03
   particle.opacity = particle.life * 0.4
 }
 
-export function isParticleAlive(particle: CollisionParticle): boolean {
-  return particle.life > 0
-}
-
-/** Update all collision particles and return only the living ones */
 export function updateCollisionParticles(
   particles: CollisionParticle[],
 ): CollisionParticle[] {
   for (const p of particles) updateCollisionParticle(p)
-  return particles.filter(isParticleAlive)
+  return particles.filter((p) => p.life > 0)
 }
