@@ -2,6 +2,8 @@
 
 Personal website featuring interactive kinetic typography with canvas-based physics. Letters are draggable with gravity, collision, and return-to-home behavior.
 
+**Live:** [jakekaplan.dev](https://jakekaplan.dev)
+
 ## Development
 
 ```bash
