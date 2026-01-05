@@ -6,13 +6,11 @@ import {
   useEffect,
   useState,
 } from 'react'
-import { THEME, type ThemeColors } from '@/constants'
 
 type ThemeName = 'light' | 'dark'
 
 interface ThemeContextValue {
   theme: ThemeName
-  colors: ThemeColors
   toggle: () => void
 }
 
@@ -43,7 +41,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const value: ThemeContextValue = {
     theme,
-    colors: THEME[theme],
     toggle,
   }
 

@@ -1,4 +1,4 @@
-export interface LetterLayout {
+interface LetterLayout {
   char: string
   x: number
   width: number
