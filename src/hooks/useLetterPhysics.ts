@@ -43,6 +43,7 @@ export function useLetterPhysics(
   const [isHovering, setIsHovering] = useState(false)
   const [isGrabbing, setIsGrabbing] = useState(false)
   const [isAtRest, setIsAtRest] = useState(true)
+  const [showHint, setShowHint] = useState(false)
 
   const spawnCollisionParticles = useCallback(
     (x: number, y: number, intensity: number) => {
@@ -518,5 +519,18 @@ export function useLetterPhysics(
     }
   }, [canvasRef, update, draw, initLetters, scatter])
 
-  return { isHovering, isGrabbing, isAtRest, reset }
+  // Delay hint appearance, then sync with isAtRest
+  const initialDelayDone = useRef(false)
+  useEffect(() => {
+    if (!initialDelayDone.current) {
+      const timer = setTimeout(() => {
+        initialDelayDone.current = true
+        setShowHint(isAtRest)
+      }, 1200)
+      return () => clearTimeout(timer)
+    }
+    setShowHint(isAtRest)
+  }, [isAtRest])
+
+  return { isHovering, isGrabbing, showHint, reset }
 }
