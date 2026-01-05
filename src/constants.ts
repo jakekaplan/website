@@ -21,7 +21,6 @@ export const ENTRY_STAGGER = 80
 export const ENTRY_DELAY = 300
 export const ENTRY_DURATION = 400
 export const ENTRY_Y_OFFSET = 20
-export const ENTRY_FADE_LERP = 0.08
 
 // Layout
 export const GROUND_OFFSET = 48

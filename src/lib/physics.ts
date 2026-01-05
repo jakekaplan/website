@@ -1,6 +1,5 @@
 import {
   BOUNCE,
-  ENTRY_FADE_LERP,
   FRICTION,
   GRAVITY,
   HOME_FORCE,
@@ -194,18 +193,6 @@ export function hitTestLetter(pos: Point, letter: Letter): boolean {
     Math.abs(localX) < letter.width * 0.6 &&
     Math.abs(localY) < letter.height * 0.4
   )
-}
-
-export function updateEntryAnimation(letter: Letter): void {
-  letter.entered = true
-  if (letter.opacity < 1 && !letter.active && !letter.grabbed) {
-    letter.opacity += (1 - letter.opacity) * ENTRY_FADE_LERP
-    letter.y += (letter.homeY - letter.y) * ENTRY_FADE_LERP
-    if (letter.opacity > 0.99) {
-      letter.opacity = 1
-      letter.y = letter.homeY
-    }
-  }
 }
 
 export function updateLetterScale(letter: Letter): void {

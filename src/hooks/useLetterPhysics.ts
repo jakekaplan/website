@@ -42,6 +42,7 @@ export function useLetterPhysics(
   const timeRef = useRef<number>(0)
   const [isHovering, setIsHovering] = useState(false)
   const [isGrabbing, setIsGrabbing] = useState(false)
+  const [isAtRest, setIsAtRest] = useState(true)
 
   const spawnCollisionParticles = useCallback(
     (x: number, y: number, intensity: number) => {
@@ -195,7 +196,9 @@ export function useLetterPhysics(
       }
 
       // Update letters
+      let anyActive = false
       for (const letter of lettersRef.current) {
+        if (letter.active) anyActive = true
         const impactSpeed = updateActiveLetter(letter, groundY, width)
         if (impactSpeed !== null) {
           spawnCollisionParticles(
@@ -206,6 +209,7 @@ export function useLetterPhysics(
         }
         updateLetterScale(letter)
       }
+      setIsAtRest(!anyActive)
 
       // Update particles
       for (const dust of dustRef.current) {
@@ -296,10 +300,14 @@ export function useLetterPhysics(
   const reset = useCallback(() => {
     grabbedLetterRef.current = null
     setIsGrabbing(false)
+    collisionParticlesRef.current = []
     const canvas = canvasRef.current
     if (canvas) {
       const dpr = window.devicePixelRatio || 1
-      initLetters(canvas.width / dpr, canvas.height / dpr)
+      const width = canvas.width / dpr
+      const height = canvas.height / dpr
+      initLetters(width, height)
+      dustRef.current = createDustParticles(width, height)
     }
   }, [canvasRef, initLetters])
 
@@ -510,5 +518,5 @@ export function useLetterPhysics(
     }
   }, [canvasRef, update, draw, initLetters, scatter])
 
-  return { isHovering, isGrabbing, reset }
+  return { isHovering, isGrabbing, isAtRest, reset }
 }

@@ -4,7 +4,8 @@ import { useLetterPhysics } from '@/hooks/useLetterPhysics'
 
 function HomePage() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const { isHovering, isGrabbing, reset } = useLetterPhysics(canvasRef)
+  const { isHovering, isGrabbing, isAtRest, reset } =
+    useLetterPhysics(canvasRef)
 
   return (
     <div className="home">
@@ -59,12 +60,9 @@ function HomePage() {
         </button>
       </header>
 
-      <footer className="footer">
-        <p className="hint">
-          <span />
-          Drag letters or press space
-        </p>
-      </footer>
+      <p className={`hint-centered ${isAtRest ? 'visible' : ''}`}>
+        Drag letters or press space
+      </p>
     </div>
   )
 }

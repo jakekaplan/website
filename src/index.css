@@ -166,38 +166,24 @@ body::after {
   height: 18px;
 }
 
-/* Footer area */
-.footer {
+/* Centered hint text */
+.hint-centered {
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  align-items: center;
-  padding: 0 2rem;
-  height: 48px;
-  z-index: 10;
-}
-
-/* Hint text */
-.hint {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, 80px);
   font-size: 0.75rem;
   color: var(--ink-muted);
   letter-spacing: 0.05em;
   text-transform: uppercase;
   opacity: 0;
-  animation: fadeSlideIn 0.8s var(--ease-out) 0.6s forwards;
+  transition: opacity 0.6s var(--ease-out);
+  pointer-events: none;
+  z-index: 10;
 }
 
-.hint span {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  background: var(--accent);
-  border-radius: 50%;
-  margin-right: 0.5rem;
-  vertical-align: middle;
-  animation: pulse 2s ease-in-out infinite;
+.hint-centered.visible {
+  opacity: 1;
 }
 
 /* Reset button */
@@ -275,29 +261,19 @@ body::after {
     padding: 1rem 1.25rem;
   }
 
-  .footer {
-    padding: 0 1.25rem;
-  }
-
-  .tagline {
-    font-size: 0.875rem;
-  }
-
-  .social a {
+  .social a,
+  .reset {
     width: 36px;
     height: 36px;
   }
 
-  .social svg {
+  .social svg,
+  .reset svg {
     width: 16px;
     height: 16px;
   }
 
-  .hint {
-    display: none;
-  }
-
-  .corner-mark {
+  .hint-centered {
     display: none;
   }
 }
