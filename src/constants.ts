@@ -48,6 +48,7 @@ export const ENTRY_STAGGER = 80
 export const ENTRY_DELAY = 300
 export const ENTRY_DURATION = 400
 export const ENTRY_Y_OFFSET = 20
+export const FADE_SPEED = 0.06 // ~280ms fade; keep .about-box animation-delay in sync
 
 // Layout
 export const GROUND_OFFSET = 48

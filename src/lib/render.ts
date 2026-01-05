@@ -29,6 +29,7 @@ export function drawBrushStroke(
   const drawWidth = img.width * scale
   const drawHeight = img.height * scale
 
+  ctx.save()
   ctx.globalAlpha = opacity
   ctx.drawImage(
     img,
@@ -37,7 +38,7 @@ export function drawBrushStroke(
     drawWidth,
     drawHeight,
   )
-  ctx.globalAlpha = 1
+  ctx.restore()
 }
 
 export function drawDustParticles(
@@ -86,6 +87,7 @@ export function drawLetters(
   letters: Letter[],
   width: number,
   colors: ThemeColors,
+  globalOpacity = 1,
 ): void {
   const fontSize = Math.min(80, width / 7)
   ctx.textAlign = 'center'
@@ -97,7 +99,7 @@ export function drawLetters(
     ctx.translate(letter.x, letter.y)
     ctx.rotate(letter.rotation)
     ctx.scale(letter.scale, letter.scale)
-    ctx.globalAlpha = letter.opacity
+    ctx.globalAlpha = letter.opacity * globalOpacity
 
     if (letter.hovered || letter.active || letter.grabbed) {
       const shadowIntensity = letter.hovered ? 0.2 : 0.15

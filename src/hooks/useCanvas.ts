@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import {
   ENTRY_STAGGER,
   ENTRY_Y_OFFSET,
+  FADE_SPEED,
   GRAB_IMPULSE_X,
   GRAB_IMPULSE_Y,
   GRAB_LIFT,
@@ -34,8 +35,6 @@ import { measureNameLayout, type NameLayout } from '@/lib/text'
 import type { CollisionParticle, DustParticle, Letter, Point } from '@/types'
 
 type FadeState = 'hidden' | 'entering' | 'visible' | 'exiting'
-
-const FADE_SPEED = 0.04
 
 export function useCanvas(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
@@ -408,7 +407,7 @@ export function useCanvas(
           drawBrushStroke(
             ctx,
             brushStrokeRef.current,
-            brushStrokeOpacity.current,
+            brushStrokeOpacity.current * letterOpacity.current,
             lettersRef.current,
           )
         }
@@ -418,7 +417,13 @@ export function useCanvas(
           currentColors,
         )
         drawGround(ctx, w, h, currentColors)
-        drawLetters(ctx, lettersRef.current, w, currentColors)
+        drawLetters(
+          ctx,
+          lettersRef.current,
+          w,
+          currentColors,
+          letterOpacity.current,
+        )
         ctx.globalAlpha = 1
       }
     }
