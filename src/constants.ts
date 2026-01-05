@@ -24,3 +24,9 @@ export const ENTRY_Y_OFFSET = 20
 
 // Layout
 export const GROUND_OFFSET = 48
+
+// Grab interaction
+export const GRAB_LIFT = 20
+export const GRAB_IMPULSE_X = 6
+export const GRAB_IMPULSE_Y = -12
+export const GRAB_ROTATION = 0.2

@@ -4,6 +4,10 @@ import {
   ENTRY_DURATION,
   ENTRY_STAGGER,
   ENTRY_Y_OFFSET,
+  GRAB_IMPULSE_X,
+  GRAB_IMPULSE_Y,
+  GRAB_LIFT,
+  GRAB_ROTATION,
   GROUND_OFFSET,
 } from '@/constants'
 import {
@@ -329,13 +333,13 @@ export function useKineticName(
       grabbedLetterRef.current = letter
       letter.grabbed = true
       letter.active = true
-      letter.vx = (Math.random() - 0.5) * 6
-      letter.vy = -12
-      letter.rotation += (Math.random() - 0.5) * 0.2
+      letter.vx = (Math.random() - 0.5) * GRAB_IMPULSE_X
+      letter.vy = GRAB_IMPULSE_Y
+      letter.rotation += (Math.random() - 0.5) * GRAB_ROTATION
       letter.restlessness = 0
       grabOffsetRef.current = {
         x: letter.x - pos.x,
-        y: letter.y - pos.y - 20,
+        y: letter.y - pos.y - GRAB_LIFT,
       }
       lastPosRef.current = pos
       setIsGrabbing(true)
@@ -436,17 +440,13 @@ export function useKineticName(
     }
   }, [canvasRef, update, draw, initLetters, scatter])
 
-  // Delay hint appearance, then sync with isAtRest
-  const initialDelayDone = useRef(false)
   useEffect(() => {
-    if (!initialDelayDone.current) {
-      const timer = setTimeout(() => {
-        initialDelayDone.current = true
-        setShowHint(isAtRest)
-      }, 1200)
-      return () => clearTimeout(timer)
+    if (!isAtRest) {
+      setShowHint(false)
+      return
     }
-    setShowHint(isAtRest)
+    const timer = setTimeout(() => setShowHint(true), 1200)
+    return () => clearTimeout(timer)
   }, [isAtRest])
 
   return { isHovering, isGrabbing, showHint, reset }

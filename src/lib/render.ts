@@ -25,9 +25,8 @@ export function drawBrushStroke(
 ): void {
   if (opacity <= 0 || letters.length === 0) return
 
-  const first = letters[0]
-  const last = letters[letters.length - 1]
-  if (!first || !last) return
+  const first = letters[0]!
+  const last = letters[letters.length - 1]!
 
   const centerX = (first.homeX + last.homeX) / 2
   const centerY = first.homeY
@@ -53,14 +52,7 @@ export function drawParticles(
   dust: DustParticle[],
   collision: CollisionParticle[],
 ): void {
-  for (const d of dust) {
-    ctx.beginPath()
-    ctx.arc(d.x, d.y, d.size, 0, Math.PI * 2)
-    ctx.fillStyle = `rgba(${INK_RGB}, ${d.opacity})`
-    ctx.fill()
-  }
-
-  for (const p of collision) {
+  for (const p of [...dust, ...collision]) {
     ctx.beginPath()
     ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
     ctx.fillStyle = `rgba(${INK_RGB}, ${p.opacity})`
