@@ -9,7 +9,7 @@ import {
   RESTLESSNESS_GROWTH,
   SCALE_LERP,
 } from '@/constants'
-import type { Letter } from '@/types'
+import type { Letter, Point } from '@/types'
 
 export interface CollisionResult {
   impactX: number
@@ -181,10 +181,7 @@ export function checkLetterCollision(
   return null
 }
 
-export function hitTestLetter(
-  pos: { x: number; y: number },
-  letter: Letter,
-): boolean {
+export function hitTestLetter(pos: Point, letter: Letter): boolean {
   const dx = pos.x - letter.x
   const dy = pos.y - letter.y
 
@@ -200,9 +197,7 @@ export function hitTestLetter(
 }
 
 export function updateEntryAnimation(letter: Letter): void {
-  if (!letter.entered) {
-    letter.entered = true
-  }
+  letter.entered = true
   if (letter.opacity < 1 && !letter.active && !letter.grabbed) {
     letter.opacity += (1 - letter.opacity) * ENTRY_FADE_LERP
     letter.y += (letter.homeY - letter.y) * ENTRY_FADE_LERP

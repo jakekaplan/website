@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
+  ACCENT_COLOR,
   BG_COLOR,
+  ENTRY_DELAY,
+  ENTRY_DURATION,
+  ENTRY_STAGGER,
   ENTRY_Y_OFFSET,
   GROUND_COLOR,
   GROUND_OFFSET,
@@ -18,7 +22,6 @@ import {
   checkLetterCollision,
   hitTestLetter,
   updateActiveLetter,
-  updateEntryAnimation,
   updateLetterScale,
 } from '@/lib/physics'
 import type { CollisionParticle, DustParticle, Letter, Point } from '@/types'
@@ -35,8 +38,10 @@ export function useLetterPhysics(
   const animationRef = useRef<number>(0)
   const initializedRef = useRef(false)
   const entryAnimationRef = useRef(false)
+  const startTimeRef = useRef<number>(0)
   const timeRef = useRef<number>(0)
   const [isHovering, setIsHovering] = useState(false)
+  const [isGrabbing, setIsGrabbing] = useState(false)
 
   const spawnCollisionParticles = useCallback(
     (x: number, y: number, intensity: number) => {
@@ -61,6 +66,7 @@ export function useLetterPhysics(
     let x = (width - totalWidth) / 2
     const y = height / 2
 
+    let letterIndex = 0
     for (const char of name) {
       const charWidth = ctx.measureText(char).width
       if (char !== ' ') {
@@ -84,13 +90,16 @@ export function useLetterPhysics(
           scale: 1,
           opacity: isFirstLoad ? 0 : 1,
           entered: !isFirstLoad,
+          entryDelay: letterIndex * ENTRY_STAGGER,
         })
+        letterIndex++
       }
       x += charWidth
     }
 
     if (isFirstLoad) {
       entryAnimationRef.current = true
+      startTimeRef.current = performance.now()
     }
 
     lettersRef.current = letters
@@ -100,9 +109,28 @@ export function useLetterPhysics(
     (width: number, height: number) => {
       const groundY = height - GROUND_OFFSET
       timeRef.current += 0.016
+      const now = performance.now()
+      const elapsed = now - startTimeRef.current
 
+      // Staggered entry animation
       for (const letter of lettersRef.current) {
-        updateEntryAnimation(letter)
+        if (!letter.entered) {
+          const timeSinceStart = elapsed - letter.entryDelay - ENTRY_DELAY
+          if (timeSinceStart > 0) {
+            const t = Math.min(1, timeSinceStart / ENTRY_DURATION)
+            // Smooth ease out
+            const ease = 1 - (1 - t) ** 3
+
+            letter.opacity = Math.min(1, t * 1.5)
+            letter.y = letter.homeY + ENTRY_Y_OFFSET * (1 - ease)
+
+            if (t >= 1) {
+              letter.entered = true
+              letter.y = letter.homeY
+              letter.opacity = 1
+            }
+          }
+        }
       }
 
       // Letter-to-letter collisions
@@ -207,6 +235,13 @@ export function useLetterPhysics(
           ctx.shadowOffsetY = shadowY
         }
 
+        // Accent underline on hover
+        if (letter.hovered && !letter.grabbed) {
+          ctx.fillStyle = ACCENT_COLOR
+          const underlineY = fontSize * 0.38
+          ctx.fillRect(-letter.width * 0.45, underlineY, letter.width * 0.9, 3)
+        }
+
         ctx.fillStyle = letter.grabbed ? INK_GRABBED : INK_COLOR
         ctx.fillText(letter.char, 0, 0)
         ctx.restore()
@@ -217,6 +252,7 @@ export function useLetterPhysics(
 
   const reset = useCallback(() => {
     grabbedLetterRef.current = null
+    setIsGrabbing(false)
     const canvas = canvasRef.current
     if (canvas) {
       const dpr = window.devicePixelRatio || 1
@@ -302,6 +338,7 @@ export function useLetterPhysics(
           y: letter.y - pos.y - 20,
         }
         lastPosRef.current = pos
+        setIsGrabbing(true)
       }
     }
 
@@ -339,6 +376,7 @@ export function useLetterPhysics(
         grabbedLetterRef.current = null
       }
       lastPosRef.current = null
+      setIsGrabbing(false)
     }
 
     const handleTouchStart = (e: TouchEvent) => {
@@ -361,6 +399,7 @@ export function useLetterPhysics(
           y: letter.y - pos.y - 20,
         }
         lastPosRef.current = pos
+        setIsGrabbing(true)
       }
     }
 
@@ -428,5 +467,5 @@ export function useLetterPhysics(
     }
   }, [canvasRef, update, draw, initLetters, scatter])
 
-  return { isHovering, reset }
+  return { isHovering, isGrabbing, reset }
 }

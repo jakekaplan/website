@@ -11,10 +11,10 @@ import {
 function createLetter(overrides: Partial<Letter> = {}): Letter {
   return {
     char: 'A',
-    x: 100,
-    y: 100,
-    homeX: 100,
-    homeY: 100,
+    x: 0,
+    y: 0,
+    homeX: 0,
+    homeY: 0,
     vx: 0,
     vy: 0,
     rotation: 0,
@@ -28,6 +28,7 @@ function createLetter(overrides: Partial<Letter> = {}): Letter {
     scale: 1,
     opacity: 1,
     entered: true,
+    entryDelay: 0,
     ...overrides,
   }
 }

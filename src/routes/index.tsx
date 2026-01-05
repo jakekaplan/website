@@ -4,14 +4,16 @@ import { useLetterPhysics } from '@/hooks/useLetterPhysics'
 
 function HomePage() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const { isHovering, reset } = useLetterPhysics(canvasRef)
+  const { isHovering, isGrabbing, reset } = useLetterPhysics(canvasRef)
 
   return (
     <div className="home">
       <canvas
         ref={canvasRef}
         className="canvas"
-        style={{ cursor: isHovering ? 'grab' : 'default' }}
+        style={{
+          cursor: isGrabbing ? 'grabbing' : isHovering ? 'grab' : 'default',
+        }}
       />
 
       {/* Corner marks for that design studio feel */}
@@ -21,8 +23,6 @@ function HomePage() {
       <div className="corner-mark corner-mark--br" />
 
       <header className="header">
-        <p className="tagline">Building things</p>
-
         <div className="social">
           <a href="mailto:jakegkaplan@gmail.com" aria-label="Email">
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">

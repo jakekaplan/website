@@ -22,6 +22,7 @@ export interface Letter {
   scale: number
   opacity: number
   entered: boolean
+  entryDelay: number
 }
 
 export interface DustParticle {
