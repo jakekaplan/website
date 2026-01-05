@@ -1,7 +1,7 @@
 import { DUST_PARTICLE_COUNT } from '@/constants'
 import type { CollisionParticle, Letter } from '@/types'
 import {
-  createCollisionParticle,
+  createCollisionParticles,
   createDustParticles,
   isParticleAlive,
   updateCollisionParticle,
@@ -64,9 +64,9 @@ describe('createDustParticles', () => {
   })
 })
 
-describe('createCollisionParticle', () => {
+describe('createCollisionParticles', () => {
   it('creates particles at the specified position', () => {
-    const particles = createCollisionParticle(100, 200, 1)
+    const particles = createCollisionParticles(100, 200, 1)
 
     for (const p of particles) {
       expect(p.x).toBe(100)
@@ -75,14 +75,14 @@ describe('createCollisionParticle', () => {
   })
 
   it('creates more particles with higher intensity', () => {
-    const lowIntensity = createCollisionParticle(0, 0, 0.5)
-    const highIntensity = createCollisionParticle(0, 0, 1.5)
+    const lowIntensity = createCollisionParticles(0, 0, 0.5)
+    const highIntensity = createCollisionParticles(0, 0, 1.5)
 
     expect(highIntensity.length).toBeGreaterThan(lowIntensity.length)
   })
 
   it('creates particles with initial life of 1', () => {
-    const particles = createCollisionParticle(0, 0, 1)
+    const particles = createCollisionParticles(0, 0, 1)
 
     for (const p of particles) {
       expect(p.life).toBe(1)

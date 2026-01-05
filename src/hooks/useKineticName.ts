@@ -11,15 +11,15 @@ import {
   GROUND_OFFSET,
 } from '@/constants'
 import {
-  createCollisionParticle,
+  createCollisionParticles,
   createDustParticles,
   isParticleAlive,
   updateCollisionParticle,
   updateDustParticle,
 } from '@/lib/particles'
 import {
-  checkLetterCollision,
   hitTestLetter,
+  resolveLetterCollision,
   updateActiveLetter,
   updateLetterScale,
 } from '@/lib/physics'
@@ -55,7 +55,7 @@ export function useKineticName(
 
   const spawnCollisionParticles = useCallback(
     (x: number, y: number, intensity: number) => {
-      const particles = createCollisionParticle(x, y, intensity)
+      const particles = createCollisionParticles(x, y, intensity)
       collisionParticlesRef.current.push(...particles)
     },
     [],
@@ -173,7 +173,7 @@ export function useKineticName(
         for (let j = i + 1; j < lettersRef.current.length; j++) {
           const letterB = lettersRef.current[j]
           if (!letterB) continue
-          const collision = checkLetterCollision(letterA, letterB)
+          const collision = resolveLetterCollision(letterA, letterB)
           if (collision) {
             spawnCollisionParticles(
               collision.impactX,

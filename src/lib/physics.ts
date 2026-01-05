@@ -107,7 +107,7 @@ export function handleCeilingCollision(letter: Letter): void {
   }
 }
 
-export function checkLetterCollision(
+export function resolveLetterCollision(
   a: Letter,
   b: Letter,
 ): CollisionResult | null {

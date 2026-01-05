@@ -22,7 +22,7 @@ export function createDustParticles(
   return particles
 }
 
-export function createCollisionParticle(
+export function createCollisionParticles(
   x: number,
   y: number,
   intensity: number,

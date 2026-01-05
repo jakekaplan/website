@@ -3,11 +3,11 @@ import {
   applyGravityAndFriction,
   applyHomeForce,
   applyVelocity,
-  checkLetterCollision,
   handleCeilingCollision,
   handleGroundCollision,
   handleWallCollision,
   hitTestLetter,
+  resolveLetterCollision,
   updateRestlessness,
 } from './physics'
 
@@ -190,11 +190,11 @@ describe('handleCeilingCollision', () => {
   })
 })
 
-describe('checkLetterCollision', () => {
+describe('resolveLetterCollision', () => {
   it('detects collision between overlapping letters', () => {
     const a = createLetter({ x: 100, y: 100, vx: 5, active: true })
     const b = createLetter({ x: 120, y: 100, vx: -5, active: true })
-    checkLetterCollision(a, b)
+    resolveLetterCollision(a, b)
     expect(a.active).toBe(true)
     expect(b.active).toBe(true)
   })
@@ -202,14 +202,14 @@ describe('checkLetterCollision', () => {
   it('returns null when letters are far apart', () => {
     const a = createLetter({ x: 100, y: 100, active: true })
     const b = createLetter({ x: 500, y: 500, active: true })
-    const result = checkLetterCollision(a, b)
+    const result = resolveLetterCollision(a, b)
     expect(result).toBeNull()
   })
 
   it('skips collision check when both inactive', () => {
     const a = createLetter({ x: 100, y: 100, active: false })
     const b = createLetter({ x: 120, y: 100, active: false })
-    const result = checkLetterCollision(a, b)
+    const result = resolveLetterCollision(a, b)
     expect(result).toBeNull()
   })
 })
