@@ -344,11 +344,18 @@ export function useLetterPhysics(
 
     let { width, height } = setCanvasSize()
 
-    if (!initializedRef.current) {
-      initLetters(width, height)
-      dustRef.current = createDustParticles(width, height)
-      initializedRef.current = true
+    const initialize = () => {
+      if (!initializedRef.current) {
+        initLetters(width, height)
+        dustRef.current = createDustParticles(width, height)
+        initializedRef.current = true
+      }
     }
+
+    // Explicitly load Syne font before measuring text
+    document.fonts.load("800 48px 'Syne'").then(() => {
+      initialize()
+    })
 
     const handleResize = () => {
       const size = setCanvasSize()
