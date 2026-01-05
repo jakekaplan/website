@@ -40,13 +40,25 @@ export function drawBrushStroke(
   ctx.globalAlpha = 1
 }
 
-export function drawParticles(
+export function drawDustParticles(
   ctx: CanvasRenderingContext2D,
   dust: DustParticle[],
-  collision: CollisionParticle[],
   colors: ThemeColors,
 ): void {
-  for (const p of [...dust, ...collision]) {
+  for (const p of dust) {
+    ctx.beginPath()
+    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
+    ctx.fillStyle = hexToRgba(colors.ink, p.opacity)
+    ctx.fill()
+  }
+}
+
+export function drawCollisionParticles(
+  ctx: CanvasRenderingContext2D,
+  particles: CollisionParticle[],
+  colors: ThemeColors,
+): void {
+  for (const p of particles) {
     ctx.beginPath()
     ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
     ctx.fillStyle = hexToRgba(colors.ink, p.opacity)

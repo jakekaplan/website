@@ -1,5 +1,8 @@
 import {
   BOUNCE,
+  ENTRY_DELAY,
+  ENTRY_DURATION,
+  ENTRY_Y_OFFSET,
   FRICTION,
   GRAVITY,
   HOME_FORCE,
@@ -8,7 +11,12 @@ import {
   RESTLESSNESS_GROWTH,
   SCALE_LERP,
 } from '@/constants'
-import type { CollisionResult, Letter, Point } from '@/types'
+import type {
+  CollisionResult,
+  Letter,
+  LetterUpdateResult,
+  Point,
+} from '@/types'
 
 export function applyGravityAndFriction(letter: Letter): void {
   const effectiveGravity = GRAVITY * (1 - letter.restlessness * 0.95)
@@ -189,14 +197,14 @@ export function hitTestLetter(pos: Point, letter: Letter): boolean {
   )
 }
 
-export function updateLetterScale(letter: Letter): void {
+function updateLetterScale(letter: Letter): void {
   if (letter.entered && letter.scale > 0.95) {
     const targetScale = letter.hovered && !letter.grabbed ? HOVER_SCALE : 1
     letter.scale += (targetScale - letter.scale) * SCALE_LERP
   }
 }
 
-export function updateActiveLetter(
+function updateActiveLetter(
   letter: Letter,
   groundY: number,
   width: number,
@@ -219,4 +227,76 @@ export function updateActiveLetter(
   handleCeilingCollision(letter)
 
   return impactSpeed
+}
+
+/** Update entry animation for a single letter */
+function updateLetterEntry(letter: Letter, elapsed: number): void {
+  if (letter.entered) return
+
+  const t = Math.min(
+    1,
+    Math.max(0, elapsed - letter.entryDelay - ENTRY_DELAY) / ENTRY_DURATION,
+  )
+  if (t <= 0) return
+
+  const ease = 1 - (1 - t) ** 3
+  letter.opacity = Math.min(1, t * 1.5)
+  letter.y = letter.homeY + ENTRY_Y_OFFSET * (1 - ease)
+
+  if (t >= 1) {
+    letter.entered = true
+    letter.y = letter.homeY
+    letter.opacity = 1
+  }
+}
+
+/** Find all letter-letter collisions and return collision results */
+export function findLetterCollisions(letters: Letter[]): CollisionResult[] {
+  const results: CollisionResult[] = []
+  for (let i = 0; i < letters.length; i++) {
+    const a = letters[i]
+    if (!a) continue
+    for (let j = i + 1; j < letters.length; j++) {
+      const b = letters[j]
+      if (!b) continue
+      const collision = resolveLetterCollision(a, b)
+      if (collision) results.push(collision)
+    }
+  }
+  return results
+}
+
+/** Update all letters physics and return results for particle spawning */
+export function updateAllLetters(
+  letters: Letter[],
+  groundY: number,
+  width: number,
+): LetterUpdateResult {
+  let anyActive = false
+  const groundImpacts: { x: number; y: number; intensity: number }[] = []
+
+  for (const letter of letters) {
+    if (letter.active) anyActive = true
+    const impact = updateActiveLetter(letter, groundY, width)
+    if (impact !== null) {
+      groundImpacts.push({
+        x: letter.x,
+        y: groundY,
+        intensity: Math.min(impact / 12, 1.5),
+      })
+    }
+    updateLetterScale(letter)
+  }
+
+  return { anyActive, groundImpacts }
+}
+
+/** Run entry animation on all letters */
+export function updateAllLetterEntries(
+  letters: Letter[],
+  elapsed: number,
+): void {
+  for (const letter of letters) {
+    updateLetterEntry(letter, elapsed)
+  }
 }

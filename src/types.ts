@@ -51,3 +51,8 @@ export interface CollisionResult {
   impactY: number
   impactSpeed: number
 }
+
+export interface LetterUpdateResult {
+  anyActive: boolean
+  groundImpacts: { x: number; y: number; intensity: number }[]
+}

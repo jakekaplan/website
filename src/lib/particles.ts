@@ -1,6 +1,19 @@
 import { DUST_PARTICLE_COUNT } from '@/constants'
 import type { CollisionParticle, DustParticle, Letter } from '@/types'
 
+/** Update all dust particles */
+export function updateAllDust(
+  dust: DustParticle[],
+  letters: Letter[] | null,
+  time: number,
+  width: number,
+  height: number,
+): void {
+  for (const d of dust) {
+    updateDustParticle(d, letters, time, width, height)
+  }
+}
+
 export function createDustParticles(
   width: number,
   height: number,
@@ -49,27 +62,31 @@ export function createCollisionParticles(
 
 export function updateDustParticle(
   dust: DustParticle,
-  letters: Letter[],
+  letters: Letter[] | null,
   time: number,
   width: number,
   height: number,
 ): void {
-  // Wake turbulence from moving letters
-  for (const letter of letters) {
-    if (!letter.active && !letter.grabbed) continue
+  // Wake turbulence from moving letters (when letters are present)
+  if (letters) {
+    for (const letter of letters) {
+      if (!letter.active && !letter.grabbed) continue
 
-    const dx = dust.x - letter.x
-    const dy = dust.y - letter.y
-    const dist = Math.sqrt(dx * dx + dy * dy)
-    const letterSpeed = Math.sqrt(letter.vx * letter.vx + letter.vy * letter.vy)
-    const pushRadius = letter.width * 1.5
+      const dx = dust.x - letter.x
+      const dy = dust.y - letter.y
+      const dist = Math.sqrt(dx * dx + dy * dy)
+      const letterSpeed = Math.sqrt(
+        letter.vx * letter.vx + letter.vy * letter.vy,
+      )
+      const pushRadius = letter.width * 1.5
 
-    if (dist < pushRadius && letterSpeed > 2) {
-      const pushStrength = (1 - dist / pushRadius) * letterSpeed * 0.15
-      const nx = dx / (dist || 1)
-      const ny = dy / (dist || 1)
-      dust.speedX += nx * pushStrength
-      dust.speedY += ny * pushStrength
+      if (dist < pushRadius && letterSpeed > 2) {
+        const pushStrength = (1 - dist / pushRadius) * letterSpeed * 0.15
+        const nx = dx / (dist || 1)
+        const ny = dy / (dist || 1)
+        dust.speedX += nx * pushStrength
+        dust.speedY += ny * pushStrength
+      }
     }
   }
 
@@ -102,4 +119,12 @@ export function updateCollisionParticle(particle: CollisionParticle): void {
 
 export function isParticleAlive(particle: CollisionParticle): boolean {
   return particle.life > 0
+}
+
+/** Update all collision particles and return only the living ones */
+export function updateCollisionParticles(
+  particles: CollisionParticle[],
+): CollisionParticle[] {
+  for (const p of particles) updateCollisionParticle(p)
+  return particles.filter(isParticleAlive)
 }
