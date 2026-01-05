@@ -257,6 +257,74 @@ body::after {
   }
 }
 
+/* Floating navigation */
+.nav-floating {
+  position: fixed;
+  top: 1.75rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.nav-floating a {
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+  text-decoration: none;
+  letter-spacing: 0.05em;
+  text-transform: lowercase;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  transition:
+    color 0.3s var(--ease-out),
+    background 0.3s var(--ease-out),
+    transform 0.3s var(--ease-spring);
+  opacity: 0;
+  animation: fadeSlideIn 0.6s var(--ease-out) forwards;
+}
+
+.nav-floating a:nth-child(1) {
+  animation-delay: 0.2s;
+}
+
+.nav-floating a:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.nav-floating a:nth-child(5) {
+  animation-delay: 0.4s;
+}
+
+.nav-dot:nth-child(2) {
+  animation-delay: 0.25s;
+}
+
+.nav-dot:nth-child(4) {
+  animation-delay: 0.35s;
+}
+
+.nav-floating a:hover {
+  color: var(--ink);
+  background: var(--bg-secondary);
+  transform: translateY(-2px);
+}
+
+.nav-floating a:active {
+  transform: translateY(0) scale(0.95);
+}
+
+.nav-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--ink-muted);
+  opacity: 0;
+  animation: fadeSlideIn 0.6s var(--ease-out) forwards;
+}
+
 /* Footer */
 .footer {
   position: fixed;
@@ -335,6 +403,62 @@ body::after {
   .footer {
     padding: 0.5rem 1.25rem;
   }
+
+  .nav-floating {
+    top: 1.25rem;
+  }
+
+  .nav-floating a {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.5rem;
+  }
+}
+
+/* Page layout */
+.page {
+  min-height: 100vh;
+  padding: 2rem;
+}
+
+.page-nav {
+  margin-bottom: 3rem;
+}
+
+.page-nav a {
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+  text-decoration: none;
+  letter-spacing: 0.05em;
+  text-transform: lowercase;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  transition:
+    color 0.3s var(--ease-out),
+    background 0.3s var(--ease-out);
+}
+
+.page-nav a:hover {
+  color: var(--ink);
+  background: var(--bg-secondary);
+}
+
+.page-content {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.page-content h1 {
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: 400;
+  margin-bottom: 1.5rem;
+  color: var(--ink);
+}
+
+.page-content p {
+  font-size: 0.875rem;
+  color: var(--ink-soft);
+  line-height: 1.7;
 }
 
 /* Selection color */

@@ -101,6 +101,14 @@ function HomePage() {
         Fling letters or press space
       </p>
 
+      <nav className="nav-floating">
+        <a href="/about">about</a>
+        <span className="nav-dot" aria-hidden="true" />
+        <a href="/projects">projects</a>
+        <span className="nav-dot" aria-hidden="true" />
+        <a href="/writing">writing</a>
+      </nav>
+
       <footer className="footer">
         <a
           href="https://github.com/jakekaplan/jakekaplan.github.io"
