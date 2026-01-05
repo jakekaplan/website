@@ -10,6 +10,7 @@ import {
   GROUND_OFFSET,
   INK_COLOR,
   INK_GRABBED,
+  INK_RGB,
 } from '@/constants'
 import {
   createCollisionParticle,
@@ -74,13 +75,9 @@ export function useLetterPhysics(
     const totalWidth = firstNameWidth + spaceWidth + lastNameWidth
     let x = (width - totalWidth) / 2
     const y = height / 2
-
     let letterIndex = 0
 
-    // First name - bold
-    ctx.font = `800 ${fontSize}px 'Syne', sans-serif`
-    for (const char of firstName) {
-      const charWidth = ctx.measureText(char).width
+    const addLetter = (char: string, charWidth: number, weight: 400 | 800) => {
       const posX = x + charWidth / 2
       letters.push({
         char,
@@ -102,44 +99,22 @@ export function useLetterPhysics(
         opacity: isFirstLoad ? 0 : 1,
         entered: !isFirstLoad,
         entryDelay: letterIndex * ENTRY_STAGGER,
-        weight: 800,
+        weight,
       })
       x += charWidth
       letterIndex++
     }
 
-    // Space
+    ctx.font = `800 ${fontSize}px 'Syne', sans-serif`
+    for (const char of firstName) {
+      addLetter(char, ctx.measureText(char).width, 800)
+    }
+
     x += spaceWidth
 
-    // Last name - light
     ctx.font = `400 ${fontSize}px 'Syne', sans-serif`
     for (const char of lastName) {
-      const charWidth = ctx.measureText(char).width
-      const posX = x + charWidth / 2
-      letters.push({
-        char,
-        x: posX,
-        y: isFirstLoad ? y + ENTRY_Y_OFFSET : y,
-        homeX: posX,
-        homeY: y,
-        vx: 0,
-        vy: 0,
-        rotation: 0,
-        rotationSpeed: 0,
-        width: charWidth,
-        height: fontSize,
-        active: false,
-        grabbed: false,
-        restlessness: 0,
-        hovered: false,
-        scale: 1,
-        opacity: isFirstLoad ? 0 : 1,
-        entered: !isFirstLoad,
-        entryDelay: letterIndex * ENTRY_STAGGER,
-        weight: 400,
-      })
-      x += charWidth
-      letterIndex++
+      addLetter(char, ctx.measureText(char).width, 400)
     }
 
     if (isFirstLoad) {
@@ -240,7 +215,7 @@ export function useLetterPhysics(
       for (const dust of dustRef.current) {
         ctx.beginPath()
         ctx.arc(dust.x, dust.y, dust.size, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(28, 25, 23, ${dust.opacity})`
+        ctx.fillStyle = `rgba(${INK_RGB}, ${dust.opacity})`
         ctx.fill()
       }
 
@@ -248,7 +223,7 @@ export function useLetterPhysics(
       for (const p of collisionParticlesRef.current) {
         ctx.beginPath()
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(28, 25, 23, ${p.opacity})`
+        ctx.fillStyle = `rgba(${INK_RGB}, ${p.opacity})`
         ctx.fill()
       }
 
@@ -277,7 +252,7 @@ export function useLetterPhysics(
           const shadowIntensity = letter.hovered ? 0.2 : 0.15
           const shadowBlur = letter.hovered ? 16 : 12
           const shadowY = letter.hovered ? 6 : 4
-          ctx.shadowColor = `rgba(28, 25, 23, ${shadowIntensity * letter.opacity})`
+          ctx.shadowColor = `rgba(${INK_RGB}, ${shadowIntensity * letter.opacity})`
           ctx.shadowBlur = shadowBlur
           ctx.shadowOffsetX = 2
           ctx.shadowOffsetY = shadowY
@@ -380,52 +355,40 @@ export function useLetterPhysics(
       return null
     }
 
-    const handleMouseDown = (e: MouseEvent) => {
-      const pos = getPos(e)
+    const grabLetter = (pos: Point) => {
       const letter = hitTestLetters(pos)
+      if (!letter) return
 
-      if (letter) {
-        grabbedLetterRef.current = letter
-        letter.grabbed = true
-        letter.active = true
-        letter.vx = (Math.random() - 0.5) * 6
-        letter.vy = -12
-        letter.rotation += (Math.random() - 0.5) * 0.2
-        letter.restlessness = 0
-        grabOffsetRef.current = {
-          x: letter.x - pos.x,
-          y: letter.y - pos.y - 20,
-        }
-        lastPosRef.current = pos
-        setIsGrabbing(true)
+      grabbedLetterRef.current = letter
+      letter.grabbed = true
+      letter.active = true
+      letter.vx = (Math.random() - 0.5) * 6
+      letter.vy = -12
+      letter.rotation += (Math.random() - 0.5) * 0.2
+      letter.restlessness = 0
+      grabOffsetRef.current = {
+        x: letter.x - pos.x,
+        y: letter.y - pos.y - 20,
       }
+      lastPosRef.current = pos
+      setIsGrabbing(true)
     }
 
-    const handleMouseMove = (e: MouseEvent) => {
-      const pos = getPos(e)
+    const dragLetter = (pos: Point) => {
+      const letter = grabbedLetterRef.current
+      if (!letter) return
 
-      const hovered = hitTestLetters(pos)
-      setIsHovering(!!hovered)
-
-      for (const letter of lettersRef.current) {
-        letter.hovered = letter === hovered
+      if (lastPosRef.current) {
+        letter.vx = (pos.x - lastPosRef.current.x) * 0.5
+        letter.vy = (pos.y - lastPosRef.current.y) * 0.5
       }
 
-      if (grabbedLetterRef.current) {
-        const letter = grabbedLetterRef.current
-
-        if (lastPosRef.current) {
-          letter.vx = (pos.x - lastPosRef.current.x) * 0.5
-          letter.vy = (pos.y - lastPosRef.current.y) * 0.5
-        }
-
-        letter.x = pos.x + grabOffsetRef.current.x
-        letter.y = pos.y + grabOffsetRef.current.y
-        lastPosRef.current = pos
-      }
+      letter.x = pos.x + grabOffsetRef.current.x
+      letter.y = pos.y + grabOffsetRef.current.y
+      lastPosRef.current = pos
     }
 
-    const handleMouseUp = () => {
+    const releaseLetter = () => {
       if (grabbedLetterRef.current) {
         const letter = grabbedLetterRef.current
         letter.grabbed = false
@@ -438,53 +401,33 @@ export function useLetterPhysics(
       setIsGrabbing(false)
     }
 
+    const handleMouseDown = (e: MouseEvent) => grabLetter(getPos(e))
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const pos = getPos(e)
+      const hovered = hitTestLetters(pos)
+      setIsHovering(!!hovered)
+      for (const letter of lettersRef.current) {
+        letter.hovered = letter === hovered
+      }
+      dragLetter(pos)
+    }
+
     const handleTouchStart = (e: TouchEvent) => {
       e.preventDefault()
       const touch = e.touches[0]
-      if (!touch) return
-      const pos = getPos(touch)
-      const letter = hitTestLetters(pos)
-
-      if (letter) {
-        grabbedLetterRef.current = letter
-        letter.grabbed = true
-        letter.active = true
-        letter.vx = (Math.random() - 0.5) * 6
-        letter.vy = -12
-        letter.rotation += (Math.random() - 0.5) * 0.2
-        letter.restlessness = 0
-        grabOffsetRef.current = {
-          x: letter.x - pos.x,
-          y: letter.y - pos.y - 20,
-        }
-        lastPosRef.current = pos
-        setIsGrabbing(true)
-      }
+      if (touch) grabLetter(getPos(touch))
     }
 
     const handleTouchMove = (e: TouchEvent) => {
       e.preventDefault()
       const touch = e.touches[0]
-      if (!touch) return
-      const pos = getPos(touch)
-
-      if (grabbedLetterRef.current) {
-        const letter = grabbedLetterRef.current
-
-        if (lastPosRef.current) {
-          letter.vx = (pos.x - lastPosRef.current.x) * 0.5
-          letter.vy = (pos.y - lastPosRef.current.y) * 0.5
-        }
-
-        letter.x = pos.x + grabOffsetRef.current.x
-        letter.y = pos.y + grabOffsetRef.current.y
-        lastPosRef.current = pos
-      }
+      if (touch) dragLetter(getPos(touch))
     }
 
     const handleTouchEnd = (e: TouchEvent) => {
       e.preventDefault()
-      handleMouseUp()
+      releaseLetter()
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -504,8 +447,8 @@ export function useLetterPhysics(
     window.addEventListener('keydown', handleKeyDown)
     canvas.addEventListener('mousedown', handleMouseDown)
     canvas.addEventListener('mousemove', handleMouseMove)
-    canvas.addEventListener('mouseup', handleMouseUp)
-    canvas.addEventListener('mouseleave', handleMouseUp)
+    canvas.addEventListener('mouseup', releaseLetter)
+    canvas.addEventListener('mouseleave', releaseLetter)
     canvas.addEventListener('touchstart', handleTouchStart, { passive: false })
     canvas.addEventListener('touchmove', handleTouchMove, { passive: false })
     canvas.addEventListener('touchend', handleTouchEnd, { passive: false })
@@ -517,8 +460,8 @@ export function useLetterPhysics(
       window.removeEventListener('keydown', handleKeyDown)
       canvas.removeEventListener('mousedown', handleMouseDown)
       canvas.removeEventListener('mousemove', handleMouseMove)
-      canvas.removeEventListener('mouseup', handleMouseUp)
-      canvas.removeEventListener('mouseleave', handleMouseUp)
+      canvas.removeEventListener('mouseup', releaseLetter)
+      canvas.removeEventListener('mouseleave', releaseLetter)
       canvas.removeEventListener('touchstart', handleTouchStart)
       canvas.removeEventListener('touchmove', handleTouchMove)
       canvas.removeEventListener('touchend', handleTouchEnd)

@@ -1,9 +1,10 @@
 // Colors
 export const BG_COLOR = '#f8f6f1'
 export const INK_COLOR = '#1c1917'
+export const INK_RGB = '28, 25, 23'
 export const INK_GRABBED = '#78716c'
 export const ACCENT_COLOR = '#b45309'
-export const GROUND_COLOR = 'rgba(28, 25, 23, 0.06)'
+export const GROUND_COLOR = `rgba(${INK_RGB}, 0.06)`
 
 // Physics
 export const GRAVITY = 0.3

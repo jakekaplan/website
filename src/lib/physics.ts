@@ -10,7 +10,7 @@ import {
 } from '@/constants'
 import type { Letter, Point } from '@/types'
 
-export interface CollisionResult {
+interface CollisionResult {
   impactX: number
   impactY: number
   impactSpeed: number
