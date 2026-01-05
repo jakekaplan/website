@@ -1,8 +1,6 @@
-# Jake Kaplan
+# [jakekaplan.dev](https://jakekaplan.dev)
 
 My personal website.
-
-**[jakekaplan.dev](https://jakekaplan.dev)**
 
 ## Development
 
