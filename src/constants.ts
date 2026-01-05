@@ -3,7 +3,6 @@ export const BG_COLOR = '#f8f6f1'
 export const INK_COLOR = '#1c1917'
 export const INK_RGB = '28, 25, 23'
 export const INK_GRABBED = '#78716c'
-export const ACCENT_COLOR = '#b45309'
 export const GROUND_COLOR = `rgba(${INK_RGB}, 0.06)`
 
 // Physics
@@ -15,7 +14,7 @@ export const RESTLESSNESS_GROWTH = 0.005
 export const MAX_RESTLESSNESS = 1
 
 // Animation
-export const DUST_PARTICLE_COUNT = 300
+export const DUST_PARTICLE_COUNT = 400
 export const HOVER_SCALE = 1.08
 export const SCALE_LERP = 0.15
 export const ENTRY_STAGGER = 80

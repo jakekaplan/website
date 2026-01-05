@@ -1,11 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useRef } from 'react'
-import { useLetterPhysics } from '@/hooks/useLetterPhysics'
+import { useKineticName } from '@/hooks/useKineticName'
 
 function HomePage() {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const { isHovering, isGrabbing, showHint, reset } =
-    useLetterPhysics(canvasRef)
+  const { isHovering, isGrabbing, showHint, reset } = useKineticName(canvasRef)
 
   return (
     <div className="home">

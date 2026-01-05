@@ -45,3 +45,9 @@ export interface CollisionParticle {
   opacity: number
   life: number
 }
+
+export interface CollisionResult {
+  impactX: number
+  impactY: number
+  impactSpeed: number
+}

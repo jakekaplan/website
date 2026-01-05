@@ -6,14 +6,15 @@ Interactive kinetic typography with canvas-based physics. Letters are draggable 
 
 ```
 src/
-├── routes/index.tsx          # Homepage canvas + layout
-├── hooks/useLetterPhysics.ts # Main physics loop, canvas rendering
+├── routes/index.tsx        # Homepage canvas + layout
+├── hooks/useKineticName.ts # Canvas orchestration (input, animation loop)
 ├── lib/
-│   ├── physics.ts            # Physics calculations (pure functions)
-│   └── particles.ts          # Particle system logic
+│   ├── physics.ts          # Physics calculations (pure functions)
+│   ├── particles.ts        # Particle system logic
+│   └── render.ts           # Canvas drawing functions
 ├── components/ErrorBoundary.tsx
-├── types.ts                  # Letter, Point, Particle interfaces
-├── constants.ts              # All tunable values (physics, colors, animation)
+├── types.ts                # Domain types (Letter, Point, Particle, etc.)
+├── constants.ts            # Tunable values (physics, colors, animation)
 └── index.css
 ```
 
@@ -30,5 +31,5 @@ npm run lint:fix  # Auto-fix
 ## Notes
 
 - Physics constants live in `constants.ts` - modify there, not inline
-- `lib/physics.ts` contains pure functions; `useLetterPhysics.ts` orchestrates the render loop
+- `lib/` contains pure functions; `useKineticName.ts` orchestrates the render loop
 - Tests exist for `lib/physics.ts` and `lib/particles.ts`

@@ -8,13 +8,7 @@ import {
   RESTLESSNESS_GROWTH,
   SCALE_LERP,
 } from '@/constants'
-import type { Letter, Point } from '@/types'
-
-interface CollisionResult {
-  impactX: number
-  impactY: number
-  impactSpeed: number
-}
+import type { CollisionResult, Letter, Point } from '@/types'
 
 export function applyGravityAndFriction(letter: Letter): void {
   const effectiveGravity = GRAVITY * (1 - letter.restlessness * 0.95)

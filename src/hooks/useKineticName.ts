@@ -1,16 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
-  ACCENT_COLOR,
-  BG_COLOR,
   ENTRY_DELAY,
   ENTRY_DURATION,
   ENTRY_STAGGER,
   ENTRY_Y_OFFSET,
-  GROUND_COLOR,
   GROUND_OFFSET,
-  INK_COLOR,
-  INK_GRABBED,
-  INK_RGB,
 } from '@/constants'
 import {
   createCollisionParticle,
@@ -25,15 +19,23 @@ import {
   updateActiveLetter,
   updateLetterScale,
 } from '@/lib/physics'
+import {
+  drawBackground,
+  drawBrushStroke,
+  drawGround,
+  drawLetters,
+  drawParticles,
+} from '@/lib/render'
 import type { CollisionParticle, DustParticle, Letter, Point } from '@/types'
 
-export function useLetterPhysics(
+export function useKineticName(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
 ) {
   const lettersRef = useRef<Letter[]>([])
   const dustRef = useRef<DustParticle[]>([])
   const collisionParticlesRef = useRef<CollisionParticle[]>([])
   const brushStrokeRef = useRef<HTMLImageElement | null>(null)
+  const brushStrokeOpacity = useRef(0)
   const lastPosRef = useRef<Point | null>(null)
   const grabbedLetterRef = useRef<Letter | null>(null)
   const grabOffsetRef = useRef<Point>({ x: 0, y: 0 })
@@ -133,6 +135,12 @@ export function useLetterPhysics(
       const now = performance.now()
       const elapsed = now - startTimeRef.current
 
+      // Brush stroke fade in (starts immediately, finishes before letters)
+      if (brushStrokeOpacity.current < 1) {
+        const brushDuration = 500
+        brushStrokeOpacity.current = Math.min(1, elapsed / brushDuration)
+      }
+
       // Staggered entry animation
       for (const letter of lettersRef.current) {
         if (!letter.entered) {
@@ -209,94 +217,18 @@ export function useLetterPhysics(
 
   const draw = useCallback(
     (ctx: CanvasRenderingContext2D, width: number, height: number) => {
-      ctx.fillStyle = BG_COLOR
-      ctx.fillRect(0, 0, width, height)
-
-      // Draw brush stroke image (static, behind letters)
+      drawBackground(ctx, width, height)
       if (brushStrokeRef.current) {
-        const letters = lettersRef.current
-        if (letters.length > 0) {
-          const first = letters[0]
-          const last = letters[letters.length - 1]
-          if (first && last) {
-            const centerX = (first.homeX + last.homeX) / 2
-            const centerY = first.homeY
-            const img = brushStrokeRef.current
-            // Scale to fit text width with some padding
-            const textWidth =
-              last.homeX + last.width / 2 - (first.homeX - first.width / 2)
-            const scale = (textWidth * 1.5) / img.width
-            const drawWidth = img.width * scale
-            const drawHeight = img.height * scale
-            ctx.drawImage(
-              img,
-              centerX - drawWidth / 2,
-              centerY - drawHeight / 2,
-              drawWidth,
-              drawHeight,
-            )
-          }
-        }
+        drawBrushStroke(
+          ctx,
+          brushStrokeRef.current,
+          brushStrokeOpacity.current,
+          lettersRef.current,
+        )
       }
-
-      // Draw dust particles
-      for (const dust of dustRef.current) {
-        ctx.beginPath()
-        ctx.arc(dust.x, dust.y, dust.size, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(${INK_RGB}, ${dust.opacity})`
-        ctx.fill()
-      }
-
-      // Draw collision particles
-      for (const p of collisionParticlesRef.current) {
-        ctx.beginPath()
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
-        ctx.fillStyle = `rgba(${INK_RGB}, ${p.opacity})`
-        ctx.fill()
-      }
-
-      const groundY = height - GROUND_OFFSET
-
-      ctx.strokeStyle = GROUND_COLOR
-      ctx.lineWidth = 1
-      ctx.beginPath()
-      ctx.moveTo(0, groundY)
-      ctx.lineTo(width, groundY)
-      ctx.stroke()
-
-      const fontSize = Math.min(80, width / 7)
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
-
-      for (const letter of lettersRef.current) {
-        ctx.font = `${letter.weight} ${fontSize}px 'Syne', sans-serif`
-        ctx.save()
-        ctx.translate(letter.x, letter.y)
-        ctx.rotate(letter.rotation)
-        ctx.scale(letter.scale, letter.scale)
-        ctx.globalAlpha = letter.opacity
-
-        if (letter.hovered || letter.active || letter.grabbed) {
-          const shadowIntensity = letter.hovered ? 0.2 : 0.15
-          const shadowBlur = letter.hovered ? 16 : 12
-          const shadowY = letter.hovered ? 6 : 4
-          ctx.shadowColor = `rgba(${INK_RGB}, ${shadowIntensity * letter.opacity})`
-          ctx.shadowBlur = shadowBlur
-          ctx.shadowOffsetX = 2
-          ctx.shadowOffsetY = shadowY
-        }
-
-        // Accent underline on hover
-        if (letter.hovered && !letter.grabbed) {
-          ctx.fillStyle = ACCENT_COLOR
-          const underlineY = fontSize * 0.38
-          ctx.fillRect(-letter.width * 0.45, underlineY, letter.width * 0.9, 3)
-        }
-
-        ctx.fillStyle = letter.grabbed ? INK_GRABBED : INK_COLOR
-        ctx.fillText(letter.char, 0, 0)
-        ctx.restore()
-      }
+      drawParticles(ctx, dustRef.current, collisionParticlesRef.current)
+      drawGround(ctx, width, height)
+      drawLetters(ctx, lettersRef.current, width)
     },
     [],
   )
