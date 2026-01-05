@@ -1,23 +1,27 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   BG_COLOR,
-  BOUNCE,
-  DUST_PARTICLE_COUNT,
-  ENTRY_FADE_LERP,
   ENTRY_Y_OFFSET,
-  FRICTION,
-  GRAVITY,
   GROUND_COLOR,
   GROUND_OFFSET,
-  HOME_FORCE,
-  HOVER_SCALE,
   INK_COLOR,
   INK_GRABBED,
-  MAX_RESTLESSNESS,
-  RESTLESSNESS_GROWTH,
-  SCALE_LERP,
-} from '../constants'
-import type { CollisionParticle, DustParticle, Letter, Point } from '../types'
+} from '@/constants'
+import {
+  createCollisionParticle,
+  createDustParticles,
+  isParticleAlive,
+  updateCollisionParticle,
+  updateDustParticle,
+} from '@/lib/particles'
+import {
+  checkLetterCollision,
+  hitTestLetter,
+  updateActiveLetter,
+  updateEntryAnimation,
+  updateLetterScale,
+} from '@/lib/physics'
+import type { CollisionParticle, DustParticle, Letter, Point } from '@/types'
 
 export function useLetterPhysics(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
@@ -33,42 +37,11 @@ export function useLetterPhysics(
   const entryAnimationRef = useRef(false)
   const timeRef = useRef<number>(0)
   const [isHovering, setIsHovering] = useState(false)
-  const hoveredLetterRef = useRef<Letter | null>(null)
-
-  const initDust = useCallback((width: number, height: number) => {
-    const particles: DustParticle[] = []
-
-    for (let i = 0; i < DUST_PARTICLE_COUNT; i++) {
-      particles.push({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        size: Math.random() * 2 + 1,
-        opacity: Math.random() * 0.15 + 0.05,
-        speedX: (Math.random() - 0.5) * 0.3,
-        speedY: (Math.random() - 0.5) * 0.2 - 0.1,
-        drift: Math.random() * Math.PI * 2,
-      })
-    }
-
-    dustRef.current = particles
-  }, [])
 
   const spawnCollisionParticles = useCallback(
     (x: number, y: number, intensity: number) => {
-      const count = Math.floor(3 + intensity * 4)
-      for (let i = 0; i < count; i++) {
-        const angle = Math.random() * Math.PI * 2
-        const speed = (1 + Math.random() * 2) * intensity
-        collisionParticlesRef.current.push({
-          x,
-          y,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed - 1,
-          size: 1 + Math.random() * 2,
-          opacity: 0.3 + Math.random() * 0.3,
-          life: 1,
-        })
-      }
+      const particles = createCollisionParticle(x, y, intensity)
+      collisionParticlesRef.current.push(...particles)
     },
     [],
   )
@@ -110,8 +83,6 @@ export function useLetterPhysics(
           hovered: false,
           scale: 1,
           opacity: isFirstLoad ? 0 : 1,
-          breatheOffset: Math.random() * Math.PI * 2,
-          entryDelay: 0,
           entered: !isFirstLoad,
         })
       }
@@ -128,242 +99,58 @@ export function useLetterPhysics(
   const update = useCallback(
     (width: number, height: number) => {
       const groundY = height - GROUND_OFFSET
-
       timeRef.current += 0.016
 
-      // Handle entry animation - fade up from bottom (all at once)
       for (const letter of lettersRef.current) {
-        if (!letter.entered) {
-          letter.entered = true
-        }
-        if (letter.opacity < 1 && !letter.active && !letter.grabbed) {
-          letter.opacity += (1 - letter.opacity) * ENTRY_FADE_LERP
-          letter.y += (letter.homeY - letter.y) * ENTRY_FADE_LERP
-          if (letter.opacity > 0.99) {
-            letter.opacity = 1
-            letter.y = letter.homeY
-          }
-        }
+        updateEntryAnimation(letter)
       }
 
       // Letter-to-letter collisions
       for (let i = 0; i < lettersRef.current.length; i++) {
+        const letterA = lettersRef.current[i]
+        if (!letterA) continue
         for (let j = i + 1; j < lettersRef.current.length; j++) {
-          const a = lettersRef.current[i]
-          const b = lettersRef.current[j]
-
-          if (!a.active && !b.active) continue
-          if (a.restlessness > 0.3 || b.restlessness > 0.3) continue
-
-          const dx = b.x - a.x
-          const dy = b.y - a.y
-          const dist = Math.sqrt(dx * dx + dy * dy)
-          const minDist = (a.width + b.width) * 0.35
-
-          if (dist < minDist && dist > 0) {
-            const nx = dx / dist
-            const ny = dy / dist
-            const overlap = minDist - dist
-
-            if (!a.grabbed && !b.grabbed) {
-              a.x -= (nx * overlap) / 2
-              a.y -= (ny * overlap) / 2
-              b.x += (nx * overlap) / 2
-              b.y += (ny * overlap) / 2
-            } else if (a.grabbed) {
-              b.x += nx * overlap
-              b.y += ny * overlap
-            } else {
-              a.x -= nx * overlap
-              a.y -= ny * overlap
-            }
-
-            const dvx = a.vx - b.vx
-            const dvy = a.vy - b.vy
-            const dvDotN = dvx * nx + dvy * ny
-
-            if (dvDotN > 0) {
-              const restitution = 0.7
-              const impactSpeed = Math.abs(dvDotN)
-
-              if (!a.grabbed) {
-                a.vx -= dvDotN * nx * restitution
-                a.vy -= dvDotN * ny * restitution
-                a.rotationSpeed += (Math.random() - 0.5) * 0.1
-              }
-              if (!b.grabbed) {
-                b.vx += dvDotN * nx * restitution
-                b.vy += dvDotN * ny * restitution
-                b.rotationSpeed += (Math.random() - 0.5) * 0.1
-              }
-
-              if (impactSpeed > 3) {
-                const impactX = (a.x + b.x) / 2
-                const impactY = (a.y + b.y) / 2
-                spawnCollisionParticles(
-                  impactX,
-                  impactY,
-                  Math.min(impactSpeed / 10, 1.5),
-                )
-              }
-
-              a.active = true
-              b.active = true
-            }
+          const letterB = lettersRef.current[j]
+          if (!letterB) continue
+          const collision = checkLetterCollision(letterA, letterB)
+          if (collision) {
+            spawnCollisionParticles(
+              collision.impactX,
+              collision.impactY,
+              collision.impactSpeed,
+            )
           }
         }
       }
 
       // Update letters
       for (const letter of lettersRef.current) {
-        if (letter.grabbed) {
-          letter.restlessness = 0
-          continue
-        }
-
-        if (!letter.active) continue
-
-        const speed = Math.sqrt(letter.vx * letter.vx + letter.vy * letter.vy)
-        const isSettled = speed < 1 && Math.abs(letter.rotationSpeed) < 0.02
-
-        if (isSettled) {
-          letter.restlessness = Math.min(
-            MAX_RESTLESSNESS,
-            letter.restlessness + RESTLESSNESS_GROWTH,
+        const impactSpeed = updateActiveLetter(letter, groundY, width)
+        if (impactSpeed !== null) {
+          spawnCollisionParticles(
+            letter.x,
+            groundY,
+            Math.min(impactSpeed / 12, 1.5),
           )
         }
-
-        const dxHome = letter.homeX - letter.x
-        const dyHome = letter.homeY - letter.y
-        const distHome = Math.sqrt(dxHome * dxHome + dyHome * dyHome)
-
-        if (letter.restlessness > 0 && distHome > 1) {
-          const force = HOME_FORCE * letter.restlessness * letter.restlessness
-          letter.vx += dxHome * force
-          letter.vy += dyHome * force
-          letter.rotationSpeed += -letter.rotation * 0.02 * letter.restlessness
-        }
-
-        if (
-          distHome < 3 &&
-          letter.restlessness > 0.5 &&
-          Math.abs(letter.rotation) < 0.05
-        ) {
-          letter.x = letter.homeX
-          letter.y = letter.homeY
-          letter.vx = 0
-          letter.vy = 0
-          letter.rotation = 0
-          letter.rotationSpeed = 0
-          letter.active = false
-          letter.restlessness = 0
-          continue
-        }
-
-        const effectiveGravity = GRAVITY * (1 - letter.restlessness * 0.95)
-        letter.vy += effectiveGravity
-        letter.vx *= FRICTION
-        letter.vy *= FRICTION
-        letter.rotation += letter.rotationSpeed
-        letter.rotationSpeed *= 0.98
-
-        letter.x += letter.vx
-        letter.y += letter.vy
-
-        const visualHeight = letter.height * 0.7
-        if (letter.y + visualHeight / 2 >= groundY) {
-          const impactSpeed = Math.abs(letter.vy)
-
-          letter.y = groundY - visualHeight / 2
-          letter.vy *= -BOUNCE
-          letter.vx *= 0.9
-          letter.rotationSpeed = letter.vx * 0.01
-
-          if (impactSpeed > 5) {
-            spawnCollisionParticles(
-              letter.x,
-              groundY,
-              Math.min(impactSpeed / 12, 1.5),
-            )
-          }
-
-          if (Math.abs(letter.vy) < 0.5) {
-            letter.vy = 0
-          }
-        }
-
-        if (letter.x < letter.width / 2) {
-          letter.x = letter.width / 2
-          letter.vx *= -BOUNCE
-        } else if (letter.x > width - letter.width / 2) {
-          letter.x = width - letter.width / 2
-          letter.vx *= -BOUNCE
-        }
-
-        if (letter.y < letter.height / 2) {
-          letter.y = letter.height / 2
-          letter.vy *= -BOUNCE
-        }
+        updateLetterScale(letter)
       }
 
-      // Update scale (hover lift effect)
-      for (const letter of lettersRef.current) {
-        if (letter.entered && letter.scale > 0.95) {
-          const targetScale =
-            letter.hovered && !letter.grabbed ? HOVER_SCALE : 1
-          letter.scale += (targetScale - letter.scale) * SCALE_LERP
-        }
-      }
-
-      // Update dust particles with wake turbulence
+      // Update particles
       for (const dust of dustRef.current) {
-        for (const letter of lettersRef.current) {
-          if (!letter.active && !letter.grabbed) continue
-
-          const dx = dust.x - letter.x
-          const dy = dust.y - letter.y
-          const dist = Math.sqrt(dx * dx + dy * dy)
-          const letterSpeed = Math.sqrt(
-            letter.vx * letter.vx + letter.vy * letter.vy,
-          )
-          const pushRadius = letter.width * 1.5
-
-          if (dist < pushRadius && letterSpeed > 2) {
-            const pushStrength = (1 - dist / pushRadius) * letterSpeed * 0.15
-            const nx = dx / (dist || 1)
-            const ny = dy / (dist || 1)
-            dust.speedX += nx * pushStrength
-            dust.speedY += ny * pushStrength
-          }
-        }
-
-        dust.x +=
-          dust.speedX + Math.sin(timeRef.current * 0.5 + dust.drift) * 0.15
-        dust.y += dust.speedY
-
-        dust.speedX *= 0.98
-        dust.speedY *= 0.98
-
-        dust.speedX += ((Math.random() - 0.5) * 0.3 - dust.speedX) * 0.01
-        dust.speedY += ((Math.random() - 0.5) * 0.2 - 0.1 - dust.speedY) * 0.01
-
-        if (dust.x < -10) dust.x = width + 10
-        if (dust.x > width + 10) dust.x = -10
-        if (dust.y < -10) dust.y = height + 10
-        if (dust.y > height + 10) dust.y = -10
+        updateDustParticle(
+          dust,
+          lettersRef.current,
+          timeRef.current,
+          width,
+          height,
+        )
       }
-
-      // Update collision particles
       for (const p of collisionParticlesRef.current) {
-        p.x += p.vx
-        p.y += p.vy
-        p.vy += 0.1
-        p.life -= 0.03
-        p.opacity = p.life * 0.4
+        updateCollisionParticle(p)
       }
-      collisionParticlesRef.current = collisionParticlesRef.current.filter(
-        (p) => p.life > 0,
-      )
+      collisionParticlesRef.current =
+        collisionParticlesRef.current.filter(isParticleAlive)
     },
     [spawnCollisionParticles],
   )
@@ -471,7 +258,7 @@ export function useLetterPhysics(
 
     if (!initializedRef.current) {
       initLetters(width, height)
-      initDust(width, height)
+      dustRef.current = createDustParticles(width, height)
       initializedRef.current = true
     }
 
@@ -480,7 +267,7 @@ export function useLetterPhysics(
       width = size.width
       height = size.height
       initLetters(width, height)
-      initDust(width, height)
+      dustRef.current = createDustParticles(width, height)
     }
 
     const getPos = (e: MouseEvent | Touch): Point => ({
@@ -491,18 +278,7 @@ export function useLetterPhysics(
     const hitTestLetters = (pos: Point): Letter | null => {
       for (let i = lettersRef.current.length - 1; i >= 0; i--) {
         const letter = lettersRef.current[i]
-        const dx = pos.x - letter.x
-        const dy = pos.y - letter.y
-
-        const cos = Math.cos(-letter.rotation)
-        const sin = Math.sin(-letter.rotation)
-        const localX = dx * cos - dy * sin
-        const localY = dx * sin + dy * cos
-
-        if (
-          Math.abs(localX) < letter.width * 0.6 &&
-          Math.abs(localY) < letter.height * 0.4
-        ) {
+        if (letter && hitTestLetter(pos, letter)) {
           return letter
         }
       }
@@ -535,13 +311,9 @@ export function useLetterPhysics(
       const hovered = hitTestLetters(pos)
       setIsHovering(!!hovered)
 
-      if (hoveredLetterRef.current && hoveredLetterRef.current !== hovered) {
-        hoveredLetterRef.current.hovered = false
+      for (const letter of lettersRef.current) {
+        letter.hovered = letter === hovered
       }
-      if (hovered) {
-        hovered.hovered = true
-      }
-      hoveredLetterRef.current = hovered
 
       if (grabbedLetterRef.current) {
         const letter = grabbedLetterRef.current
@@ -571,7 +343,9 @@ export function useLetterPhysics(
 
     const handleTouchStart = (e: TouchEvent) => {
       e.preventDefault()
-      const pos = getPos(e.touches[0])
+      const touch = e.touches[0]
+      if (!touch) return
+      const pos = getPos(touch)
       const letter = hitTestLetters(pos)
 
       if (letter) {
@@ -592,7 +366,9 @@ export function useLetterPhysics(
 
     const handleTouchMove = (e: TouchEvent) => {
       e.preventDefault()
-      const pos = getPos(e.touches[0])
+      const touch = e.touches[0]
+      if (!touch) return
+      const pos = getPos(touch)
 
       if (grabbedLetterRef.current) {
         const letter = grabbedLetterRef.current
@@ -650,7 +426,7 @@ export function useLetterPhysics(
       canvas.removeEventListener('touchend', handleTouchEnd)
       cancelAnimationFrame(animationRef.current)
     }
-  }, [canvasRef, update, draw, initLetters, initDust, scatter])
+  }, [canvasRef, update, draw, initLetters, scatter])
 
   return { isHovering, reset }
 }

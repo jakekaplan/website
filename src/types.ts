@@ -21,8 +21,6 @@ export interface Letter {
   hovered: boolean
   scale: number
   opacity: number
-  breatheOffset: number
-  entryDelay: number
   entered: boolean
 }
 

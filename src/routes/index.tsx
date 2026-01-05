@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useRef } from 'react'
-import { useLetterPhysics } from '../hooks/useLetterPhysics'
+import { useLetterPhysics } from '@/hooks/useLetterPhysics'
 
 function HomePage() {
   const canvasRef = useRef<HTMLCanvasElement>(null)

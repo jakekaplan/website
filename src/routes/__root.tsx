@@ -1,12 +1,15 @@
 import { createRootRoute, Outlet } from '@tanstack/react-router'
-import '../index.css'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
+import '@/index.css'
 
 export const Route = createRootRoute({
   component: () => (
-    <div className="app">
-      <main className="main">
-        <Outlet />
-      </main>
-    </div>
+    <ErrorBoundary>
+      <div className="app">
+        <main className="main">
+          <Outlet />
+        </main>
+      </div>
+    </ErrorBoundary>
   ),
 })

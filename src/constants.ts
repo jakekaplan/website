@@ -13,7 +13,7 @@ export const RESTLESSNESS_GROWTH = 0.005
 export const MAX_RESTLESSNESS = 1
 
 // Animation
-export const DUST_PARTICLE_COUNT = 100
+export const DUST_PARTICLE_COUNT = 300
 export const HOVER_SCALE = 1.08
 export const SCALE_LERP = 0.15
 export const ENTRY_FADE_LERP = 0.08
