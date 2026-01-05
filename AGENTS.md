@@ -16,9 +16,10 @@ The homepage features interactive typography where letters behave as physical ob
 src/
 ├── main.tsx                # App entry point
 ├── routes/
-│   ├── __root.tsx          # Root layout
+│   ├── __root.tsx          # Root layout + ThemeProvider
 │   └── index.tsx           # Homepage canvas + layout
 ├── hooks/useKineticName.ts # Canvas orchestration (input, animation loop)
+├── contexts/ThemeContext.tsx # Theme state (light/dark) + localStorage persistence
 ├── lib/
 │   ├── physics.ts          # Physics calculations (pure functions)
 │   ├── particles.ts        # Particle system logic
@@ -50,6 +51,18 @@ Letters behave as physical objects with:
 - **Snap to Home** - When close enough to home and sufficiently restless, letters snap back and deactivate
 
 The loop: grab letter → falls with physics → settles → builds restlessness → returns home → snaps back.
+
+## Theming
+
+Light/dark mode with theme-specific brush strokes:
+- Light: warm cream background, orange accent, `warm-brush-stroke.png`
+- Dark: navy background, teal accent, `cool-brush-stroke.png`
+
+**Keep colors in sync:** Theme colors are defined in two places:
+- `constants.ts` → `THEME` object (for canvas rendering)
+- `index.css` → CSS variables in `:root` and `:root[data-theme="dark"]`
+
+When updating colors, update both files.
 
 ## Notes
 

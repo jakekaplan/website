@@ -1,19 +1,13 @@
-import {
-  BG_COLOR,
-  GROUND_COLOR,
-  GROUND_OFFSET,
-  INK_COLOR,
-  INK_GRABBED,
-  INK_RGB,
-} from '@/constants'
+import { GROUND_OFFSET, hexToRgba, type ThemeColors } from '@/constants'
 import type { CollisionParticle, DustParticle, Letter } from '@/types'
 
 export function drawBackground(
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number,
+  colors: ThemeColors,
 ): void {
-  ctx.fillStyle = BG_COLOR
+  ctx.fillStyle = colors.bg
   ctx.fillRect(0, 0, width, height)
 }
 
@@ -23,10 +17,9 @@ export function drawBrushStroke(
   opacity: number,
   letters: Letter[],
 ): void {
-  if (opacity <= 0 || letters.length === 0) return
-
-  const first = letters[0]!
-  const last = letters[letters.length - 1]!
+  const first = letters[0]
+  const last = letters[letters.length - 1]
+  if (opacity <= 0 || !first || !last) return
 
   const centerX = (first.homeX + last.homeX) / 2
   const centerY = first.homeY
@@ -51,11 +44,12 @@ export function drawParticles(
   ctx: CanvasRenderingContext2D,
   dust: DustParticle[],
   collision: CollisionParticle[],
+  colors: ThemeColors,
 ): void {
   for (const p of [...dust, ...collision]) {
     ctx.beginPath()
     ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
-    ctx.fillStyle = `rgba(${INK_RGB}, ${p.opacity})`
+    ctx.fillStyle = hexToRgba(colors.ink, p.opacity)
     ctx.fill()
   }
 }
@@ -64,9 +58,10 @@ export function drawGround(
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number,
+  colors: ThemeColors,
 ): void {
   const groundY = height - GROUND_OFFSET
-  ctx.strokeStyle = GROUND_COLOR
+  ctx.strokeStyle = colors.ground
   ctx.lineWidth = 1
   ctx.beginPath()
   ctx.moveTo(0, groundY)
@@ -78,6 +73,7 @@ export function drawLetters(
   ctx: CanvasRenderingContext2D,
   letters: Letter[],
   width: number,
+  colors: ThemeColors,
 ): void {
   const fontSize = Math.min(80, width / 7)
   ctx.textAlign = 'center'
@@ -95,13 +91,13 @@ export function drawLetters(
       const shadowIntensity = letter.hovered ? 0.2 : 0.15
       const shadowBlur = letter.hovered ? 16 : 12
       const shadowY = letter.hovered ? 6 : 4
-      ctx.shadowColor = `rgba(${INK_RGB}, ${shadowIntensity * letter.opacity})`
+      ctx.shadowColor = hexToRgba(colors.ink, shadowIntensity * letter.opacity)
       ctx.shadowBlur = shadowBlur
       ctx.shadowOffsetX = 2
       ctx.shadowOffsetY = shadowY
     }
 
-    ctx.fillStyle = letter.grabbed ? INK_GRABBED : INK_COLOR
+    ctx.fillStyle = letter.grabbed ? colors.inkGrabbed : colors.ink
     ctx.fillText(letter.char, 0, 0)
     ctx.restore()
   }

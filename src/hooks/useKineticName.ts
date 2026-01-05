@@ -9,6 +9,7 @@ import {
   GRAB_LIFT,
   GRAB_ROTATION,
   GROUND_OFFSET,
+  THEME,
 } from '@/constants'
 import {
   createCollisionParticles,
@@ -34,7 +35,9 @@ import type { CollisionParticle, DustParticle, Letter, Point } from '@/types'
 
 export function useKineticName(
   canvasRef: React.RefObject<HTMLCanvasElement | null>,
+  theme: 'light' | 'dark',
 ) {
+  const colors = THEME[theme]
   const lettersRef = useRef<Letter[]>([])
   const dustRef = useRef<DustParticle[]>([])
   const collisionParticlesRef = useRef<CollisionParticle[]>([])
@@ -221,7 +224,7 @@ export function useKineticName(
 
   const draw = useCallback(
     (ctx: CanvasRenderingContext2D, width: number, height: number) => {
-      drawBackground(ctx, width, height)
+      drawBackground(ctx, width, height, colors)
       if (brushStrokeRef.current) {
         drawBrushStroke(
           ctx,
@@ -230,11 +233,11 @@ export function useKineticName(
           lettersRef.current,
         )
       }
-      drawParticles(ctx, dustRef.current, collisionParticlesRef.current)
-      drawGround(ctx, width, height)
-      drawLetters(ctx, lettersRef.current, width)
+      drawParticles(ctx, dustRef.current, collisionParticlesRef.current, colors)
+      drawGround(ctx, width, height, colors)
+      drawLetters(ctx, lettersRef.current, width, colors)
     },
-    [],
+    [colors],
   )
 
   const reset = useCallback(() => {
@@ -289,13 +292,6 @@ export function useKineticName(
         dustRef.current = createDustParticles(width, height)
         initializedRef.current = true
       }
-    }
-
-    // Load brush stroke image
-    const brushImg = new Image()
-    brushImg.src = '/brush-stroke.png'
-    brushImg.onload = () => {
-      brushStrokeRef.current = brushImg
     }
 
     // Explicitly load Syne font before measuring text
@@ -439,6 +435,15 @@ export function useKineticName(
       cancelAnimationFrame(animationRef.current)
     }
   }, [canvasRef, update, draw, initLetters, scatter])
+
+  // Reload brush stroke when theme changes
+  useEffect(() => {
+    const brushImg = new Image()
+    brushImg.src = colors.brushStroke
+    brushImg.onload = () => {
+      brushStrokeRef.current = brushImg
+    }
+  }, [colors.brushStroke])
 
   useEffect(() => {
     if (!isAtRest) {

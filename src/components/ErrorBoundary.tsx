@@ -29,9 +29,9 @@ export class ErrorBoundary extends Component<Props, State> {
             alignItems: 'center',
             justifyContent: 'center',
             height: '100vh',
-            fontFamily: "'DM Mono', monospace",
-            color: '#1c1917',
-            backgroundColor: '#f8f6f1',
+            fontFamily: 'var(--font-mono)',
+            color: 'var(--ink)',
+            backgroundColor: 'var(--bg-primary)',
             padding: '2rem',
             textAlign: 'center',
           }}
@@ -45,10 +45,10 @@ export class ErrorBoundary extends Component<Props, State> {
             style={{
               padding: '0.75rem 1.5rem',
               fontSize: '0.875rem',
-              fontFamily: "'DM Mono', monospace",
-              color: '#1c1917',
+              fontFamily: 'var(--font-mono)',
+              color: 'var(--ink)',
               backgroundColor: 'transparent',
-              border: '1px solid rgba(28, 25, 23, 0.2)',
+              border: '1px solid var(--grid-color)',
               borderRadius: '0.25rem',
               cursor: 'pointer',
             }}

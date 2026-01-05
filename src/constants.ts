@@ -1,9 +1,36 @@
-// Colors
-export const BG_COLOR = '#f8f6f1'
-export const INK_COLOR = '#1c1917'
-export const INK_RGB = '28, 25, 23'
-export const INK_GRABBED = '#78716c'
-export const GROUND_COLOR = `rgba(${INK_RGB}, 0.06)`
+// Theme colors (keep in sync with index.css CSS variables)
+export interface ThemeColors {
+  bg: string
+  ink: string
+  inkGrabbed: string
+  ground: string
+  brushStroke: string
+}
+
+export const THEME: Record<'light' | 'dark', ThemeColors> = {
+  light: {
+    bg: '#f8f6f1', // --bg-primary
+    ink: '#1c1917', // --ink
+    inkGrabbed: '#78716c', // --ink-muted
+    ground: 'rgba(28, 25, 23, 0.06)',
+    brushStroke: '/warm-brush-stroke.png',
+  },
+  dark: {
+    bg: '#0f172a', // --bg-primary
+    ink: '#f8fafc', // --ink
+    inkGrabbed: '#94a3b8', // --ink-muted
+    ground: 'rgba(248, 250, 252, 0.08)',
+    brushStroke: '/cool-brush-stroke.png',
+  },
+}
+
+/** Convert hex color to rgba string */
+export function hexToRgba(hex: string, alpha: number): string {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`
+}
 
 // Physics
 export const GRAVITY = 0.3
