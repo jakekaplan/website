@@ -33,6 +33,7 @@ export function useLetterPhysics(
   const lettersRef = useRef<Letter[]>([])
   const dustRef = useRef<DustParticle[]>([])
   const collisionParticlesRef = useRef<CollisionParticle[]>([])
+  const brushStrokeRef = useRef<HTMLImageElement | null>(null)
   const lastPosRef = useRef<Point | null>(null)
   const grabbedLetterRef = useRef<Letter | null>(null)
   const grabOffsetRef = useRef<Point>({ x: 0, y: 0 })
@@ -211,6 +212,33 @@ export function useLetterPhysics(
       ctx.fillStyle = BG_COLOR
       ctx.fillRect(0, 0, width, height)
 
+      // Draw brush stroke image (static, behind letters)
+      if (brushStrokeRef.current) {
+        const letters = lettersRef.current
+        if (letters.length > 0) {
+          const first = letters[0]
+          const last = letters[letters.length - 1]
+          if (first && last) {
+            const centerX = (first.homeX + last.homeX) / 2
+            const centerY = first.homeY
+            const img = brushStrokeRef.current
+            // Scale to fit text width with some padding
+            const textWidth =
+              last.homeX + last.width / 2 - (first.homeX - first.width / 2)
+            const scale = (textWidth * 1.5) / img.width
+            const drawWidth = img.width * scale
+            const drawHeight = img.height * scale
+            ctx.drawImage(
+              img,
+              centerX - drawWidth / 2,
+              centerY - drawHeight / 2,
+              drawWidth,
+              drawHeight,
+            )
+          }
+        }
+      }
+
       // Draw dust particles
       for (const dust of dustRef.current) {
         ctx.beginPath()
@@ -325,6 +353,13 @@ export function useLetterPhysics(
         dustRef.current = createDustParticles(width, height)
         initializedRef.current = true
       }
+    }
+
+    // Load brush stroke image
+    const brushImg = new Image()
+    brushImg.src = '/brush-stroke.png'
+    brushImg.onload = () => {
+      brushStrokeRef.current = brushImg
     }
 
     // Explicitly load Syne font before measuring text
