@@ -167,7 +167,7 @@ body::after {
   pointer-events: none;
   z-index: 10;
   opacity: 0;
-  transition: opacity 0.5s var(--ease-out);
+  transition: opacity 2s var(--ease-out);
 }
 
 .hint-centered.visible {
