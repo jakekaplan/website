@@ -6,7 +6,10 @@ Interactive kinetic typography with canvas-based physics. Letters are draggable 
 
 ```
 src/
-├── routes/index.tsx        # Homepage canvas + layout
+├── main.tsx                # App entry point
+├── routes/
+│   ├── __root.tsx          # Root layout
+│   └── index.tsx           # Homepage canvas + layout
 ├── hooks/useKineticName.ts # Canvas orchestration (input, animation loop)
 ├── lib/
 │   ├── physics.ts          # Physics calculations (pure functions)
@@ -27,6 +30,18 @@ npm run test      # Run tests
 npm run lint      # Biome check
 npm run lint:fix  # Auto-fix
 ```
+
+## Physics
+
+Letters behave as physical objects with:
+
+- **Gravity & Friction** - Letters fall and slow down over time
+- **Collisions** - Bounce off ground, walls, ceiling, and each other
+- **Restlessness** - Settled letters accumulate "restlessness" which grows over time
+- **Home Force** - Restless letters are pulled back toward their original position with force proportional to restlessness²
+- **Snap to Home** - When close enough to home and sufficiently restless, letters snap back and deactivate
+
+The loop: grab letter → falls with physics → settles → builds restlessness → returns home → snaps back.
 
 ## Notes
 

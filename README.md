@@ -1,18 +1,12 @@
 # Jake Kaplan
 
-Personal website featuring an interactive Conway's Game of Life simulation.
+Personal website featuring interactive kinetic typography with canvas-based physics. Letters are draggable with gravity, collision, and return-to-home behavior.
 
 ## Development
 
 ```bash
 npm install
 npm run dev
-```
-
-## Deploy to GitHub Pages
-
-```bash
-npm run deploy
 ```
 
 ## Built With
