@@ -72,11 +72,30 @@ export function useCanvas(
   const colorsRef = useRef(colors)
   colorsRef.current = colors
 
+  // Preload both brush stroke images on mount to avoid flash on first theme switch
+  const brushStrokeCache = useRef<Record<string, HTMLImageElement>>({})
   useEffect(() => {
-    const img = new Image()
-    img.src = colors.brushStroke
-    img.onload = () => {
-      brushStrokeRef.current = img
+    for (const t of ['light', 'dark'] as const) {
+      const src = THEME[t].brushStroke
+      if (!brushStrokeCache.current[src]) {
+        const img = new Image()
+        img.src = src
+        brushStrokeCache.current[src] = img
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    const cached = brushStrokeCache.current[colors.brushStroke]
+    if (cached?.complete) {
+      brushStrokeRef.current = cached
+    } else {
+      const img = new Image()
+      img.src = colors.brushStroke
+      img.onload = () => {
+        brushStrokeRef.current = img
+        brushStrokeCache.current[colors.brushStroke] = img
+      }
     }
   }, [colors.brushStroke])
 
