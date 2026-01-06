@@ -1,4 +1,4 @@
-import { DUST_PARTICLE_COUNT } from '@/constants'
+import { DUST_COLORED_RATIO, DUST_PARTICLE_COUNT } from '@/constants'
 import {
   createCollisionParticles,
   createDustParticles,
@@ -7,16 +7,18 @@ import {
 } from './particles'
 import { createLetter } from './test-utils'
 
+const TEST_COLOR_COUNT = 3
+
 describe('createDustParticles', () => {
   it('creates the correct number of dust particles', () => {
-    const particles = createDustParticles(800, 600)
+    const particles = createDustParticles(800, 600, TEST_COLOR_COUNT)
     expect(particles).toHaveLength(DUST_PARTICLE_COUNT)
   })
 
   it('creates particles within bounds', () => {
     const width = 800
     const height = 600
-    const particles = createDustParticles(width, height)
+    const particles = createDustParticles(width, height, TEST_COLOR_COUNT)
 
     for (const p of particles) {
       expect(p.x).toBeGreaterThanOrEqual(0)
@@ -27,13 +29,39 @@ describe('createDustParticles', () => {
   })
 
   it('creates particles with valid properties', () => {
-    const particles = createDustParticles(800, 600)
+    const particles = createDustParticles(800, 600, TEST_COLOR_COUNT)
 
     for (const p of particles) {
       expect(p.size).toBeGreaterThan(0)
       expect(p.opacity).toBeGreaterThan(0)
       expect(p.opacity).toBeLessThanOrEqual(0.2)
     }
+  })
+
+  it('assigns colorIndex to some particles', () => {
+    const particles = createDustParticles(800, 600, TEST_COLOR_COUNT)
+    const coloredCount = particles.filter((p) => p.colorIndex !== null).length
+    const expectedMin = DUST_PARTICLE_COUNT * DUST_COLORED_RATIO * 0.5
+    const expectedMax = DUST_PARTICLE_COUNT * DUST_COLORED_RATIO * 1.5
+
+    expect(coloredCount).toBeGreaterThan(expectedMin)
+    expect(coloredCount).toBeLessThan(expectedMax)
+  })
+
+  it('assigns valid colorIndex values', () => {
+    const particles = createDustParticles(800, 600, TEST_COLOR_COUNT)
+    const coloredParticles = particles.filter((p) => p.colorIndex !== null)
+
+    for (const p of coloredParticles) {
+      expect(p.colorIndex).toBeGreaterThanOrEqual(0)
+      expect(p.colorIndex).toBeLessThan(TEST_COLOR_COUNT)
+    }
+  })
+
+  it('creates no colored particles when colorCount is 0', () => {
+    const particles = createDustParticles(800, 600, 0)
+    const coloredCount = particles.filter((p) => p.colorIndex !== null).length
+    expect(coloredCount).toBe(0)
   })
 })
 
@@ -73,6 +101,7 @@ describe('updateAllDust', () => {
       speedX: 1,
       speedY: 1,
       drift: 0,
+      colorIndex: null,
     }
     const initialX = particle.x
     const initialY = particle.y
@@ -92,6 +121,7 @@ describe('updateAllDust', () => {
       speedX: 0,
       speedY: 0,
       drift: 0,
+      colorIndex: null,
     }
     const letter = createLetter({ x: 100, y: 100, vx: 10, vy: 0, active: true })
 
@@ -109,6 +139,7 @@ describe('updateAllDust', () => {
       speedX: 0,
       speedY: 0,
       drift: 0,
+      colorIndex: null,
     }
 
     updateAllDust([particle], [], 0, 800, 600)

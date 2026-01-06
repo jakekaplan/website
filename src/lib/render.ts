@@ -49,7 +49,9 @@ export function drawDustParticles(
   for (const p of dust) {
     ctx.beginPath()
     ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2)
-    ctx.fillStyle = hexToRgba(colors.ink, p.opacity)
+    const color =
+      p.colorIndex !== null ? colors.dustColors[p.colorIndex]! : colors.ink
+    ctx.fillStyle = hexToRgba(color, p.opacity)
     ctx.fill()
   }
 }

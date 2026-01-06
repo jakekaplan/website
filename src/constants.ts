@@ -5,6 +5,7 @@ export interface ThemeColors {
   inkGrabbed: string
   ground: string
   brushStroke: string
+  dustColors: string[] // spectrum of colors for dust particles
 }
 
 export const THEME: Record<'light' | 'dark', ThemeColors> = {
@@ -14,6 +15,7 @@ export const THEME: Record<'light' | 'dark', ThemeColors> = {
     inkGrabbed: '#78716c', // --ink-muted
     ground: 'rgba(28, 25, 23, 0.06)',
     brushStroke: '/warm-brush-stroke.png',
+    dustColors: ['#fde047', '#fbbf24', '#f97316'], // yellow → gold → orange
   },
   dark: {
     bg: '#0f172a', // --bg-primary
@@ -21,6 +23,7 @@ export const THEME: Record<'light' | 'dark', ThemeColors> = {
     inkGrabbed: '#94a3b8', // --ink-muted
     ground: 'rgba(248, 250, 252, 0.08)',
     brushStroke: '/cool-brush-stroke.png',
+    dustColors: ['#22d3ee', '#67e8f9', '#fde047'], // cyan → light cyan → yellow
   },
 }
 
@@ -42,6 +45,7 @@ export const MAX_RESTLESSNESS = 1
 
 // Animation
 export const DUST_PARTICLE_COUNT = 400
+export const DUST_COLORED_RATIO = 0.2 // 20% of dust particles are colored
 export const HOVER_SCALE = 1.08
 export const SCALE_LERP = 0.15
 export const ENTRY_STAGGER = 80

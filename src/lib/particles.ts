@@ -1,4 +1,4 @@
-import { DUST_PARTICLE_COUNT } from '@/constants'
+import { DUST_COLORED_RATIO, DUST_PARTICLE_COUNT } from '@/constants'
 import type { CollisionParticle, DustParticle, Letter } from '@/types'
 
 export function updateAllDust(
@@ -16,10 +16,14 @@ export function updateAllDust(
 export function createDustParticles(
   width: number,
   height: number,
+  colorCount: number,
 ): DustParticle[] {
   const particles: DustParticle[] = []
 
   for (let i = 0; i < DUST_PARTICLE_COUNT; i++) {
+    const isColored = Math.random() < DUST_COLORED_RATIO && colorCount > 0
+    const colorIndex = isColored ? Math.floor(Math.random() * colorCount) : null
+
     particles.push({
       x: Math.random() * width,
       y: Math.random() * height,
@@ -28,6 +32,7 @@ export function createDustParticles(
       speedX: (Math.random() - 0.5) * 0.3,
       speedY: (Math.random() - 0.5) * 0.2 - 0.1,
       drift: Math.random() * Math.PI * 2,
+      colorIndex,
     })
   }
 

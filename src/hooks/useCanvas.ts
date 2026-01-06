@@ -96,7 +96,11 @@ export function useCanvas(
         letter.restlessness = 0
       }
       collisionParticlesRef.current = []
-      dustRef.current = createDustParticles(width, height)
+      dustRef.current = createDustParticles(
+        width,
+        height,
+        colorsRef.current.dustColors.length,
+      )
     }
   }, [resetKey])
 
@@ -279,7 +283,11 @@ export function useCanvas(
     const { width, height } = resize()
 
     if (dustRef.current.length === 0) {
-      dustRef.current = createDustParticles(width, height)
+      dustRef.current = createDustParticles(
+        width,
+        height,
+        colorsRef.current.dustColors.length,
+      )
     }
 
     const getPos = (e: MouseEvent | Touch): Point => ({

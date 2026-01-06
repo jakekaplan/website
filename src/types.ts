@@ -34,6 +34,7 @@ export interface DustParticle {
   speedX: number
   speedY: number
   drift: number
+  colorIndex: number | null // index into theme dustColors, null = use ink
 }
 
 export interface CollisionParticle {
