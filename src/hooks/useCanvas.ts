@@ -116,9 +116,9 @@ export function useCanvas(
         lettersRef.current = layout.letters.map((l, i) => ({
           char: l.char,
           x: l.x,
-          y: layout.centerY + ENTRY_Y_OFFSET,
+          y: (l.centerY ?? layout.centerY) + ENTRY_Y_OFFSET,
           homeX: l.x,
-          homeY: layout.centerY,
+          homeY: l.centerY ?? layout.centerY,
           vx: 0,
           vy: 0,
           rotation: 0,
@@ -266,13 +266,14 @@ export function useCanvas(
           const letter = lettersRef.current[i]
           const l = newLayout.letters[i]
           if (!letter || !l) continue
+          const letterY = l.centerY ?? newLayout.centerY
           letter.homeX = l.x
-          letter.homeY = newLayout.centerY
+          letter.homeY = letterY
           letter.width = l.width
           letter.height = newLayout.fontSize
           if (!letter.active && letter.entered) {
             letter.x = l.x
-            letter.y = newLayout.centerY
+            letter.y = letterY
           }
         }
       }

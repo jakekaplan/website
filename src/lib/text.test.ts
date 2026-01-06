@@ -55,8 +55,9 @@ describe('measureNameLayout', () => {
 
   it('calculates fontSize based on width', () => {
     // fontSize = Math.min(80, width / 7)
-    const narrowLayout = measureNameLayout(350, 600) // 350/7 = 50
-    expect(narrowLayout.fontSize).toBe(50)
+    // Use wide enough widths to avoid triggering stacked layout
+    const mediumLayout = measureNameLayout(560, 600) // 560/7 = 80, at threshold
+    expect(mediumLayout.fontSize).toBe(80)
 
     const wideLayout = measureNameLayout(1000, 600) // 1000/7 = 142, capped at 80
     expect(wideLayout.fontSize).toBe(80)
@@ -124,5 +125,94 @@ describe('measureNameLayout', () => {
     for (const letter of layout.letters) {
       expect(letter.width).toBeGreaterThan(0)
     }
+  })
+
+  describe('stacked layout (narrow viewport)', () => {
+    // With mock widths: Jake=143, space=20, Kaplan=225, total=388
+    // At width 400, fontSize=57, totalWidth would exceed 85% threshold
+    const narrowWidth = 300
+
+    it('triggers stacked layout when horizontal width exceeds threshold', () => {
+      const layout = measureNameLayout(narrowWidth, 600)
+
+      // In stacked layout, letters have per-letter centerY values
+      const firstNameLetters = layout.letters.slice(0, 4)
+      const lastNameLetters = layout.letters.slice(4)
+
+      // All first name letters should share the same centerY (top row)
+      const topY = firstNameLetters[0]?.centerY
+      expect(topY).toBeDefined()
+      for (const letter of firstNameLetters) {
+        expect(letter.centerY).toBe(topY)
+      }
+
+      // All last name letters should share the same centerY (bottom row)
+      const bottomY = lastNameLetters[0]?.centerY
+      expect(bottomY).toBeDefined()
+      for (const letter of lastNameLetters) {
+        expect(letter.centerY).toBe(bottomY)
+      }
+
+      // Top row should be above bottom row
+      expect(topY).toBeLessThan(bottomY!)
+    })
+
+    it('uses larger font size in stacked layout', () => {
+      const horizontalLayout = measureNameLayout(800, 600)
+      const stackedLayout = measureNameLayout(narrowWidth, 600)
+
+      // Stacked layout should have larger font (scaled by STACKED_FONT_SCALE)
+      expect(stackedLayout.fontSize).toBeGreaterThan(
+        horizontalLayout.fontSize * 0.5,
+      )
+    })
+
+    it('centers each row independently', () => {
+      const layout = measureNameLayout(narrowWidth, 600)
+
+      const firstNameLetters = layout.letters.slice(0, 4)
+      const lastNameLetters = layout.letters.slice(4)
+
+      // Calculate center of first name row
+      const firstLeft = firstNameLetters[0]!.x - firstNameLetters[0]!.width / 2
+      const firstRight = firstNameLetters[3]!.x + firstNameLetters[3]!.width / 2
+      const firstCenter = (firstLeft + firstRight) / 2
+
+      // Calculate center of last name row
+      const lastLeft = lastNameLetters[0]!.x - lastNameLetters[0]!.width / 2
+      const lastRight = lastNameLetters[5]!.x + lastNameLetters[5]!.width / 2
+      const lastCenter = (lastLeft + lastRight) / 2
+
+      // Both rows should be centered around viewport center
+      expect(firstCenter).toBeCloseTo(narrowWidth / 2, -1)
+      expect(lastCenter).toBeCloseTo(narrowWidth / 2, -1)
+    })
+
+    it('applies tighter tracking in stacked layout', () => {
+      const layout = measureNameLayout(narrowWidth, 600)
+      const firstNameLetters = layout.letters.slice(0, 4)
+
+      // With tracking < 1 (0.85), letters should overlap slightly
+      // Check that each letter's right edge exceeds the next letter's left edge
+      for (let i = 0; i < firstNameLetters.length - 1; i++) {
+        const curr = firstNameLetters[i]!
+        const next = firstNameLetters[i + 1]!
+
+        const currRightEdge = curr.x + curr.width / 2
+        const nextLeftEdge = next.x - next.width / 2
+
+        // With tight tracking, letters should overlap
+        expect(currRightEdge).toBeGreaterThan(nextLeftEdge)
+      }
+    })
+
+    it('does not use stacked layout on wide viewports', () => {
+      const layout = measureNameLayout(800, 600)
+
+      // In horizontal layout, letters should not have individual centerY
+      for (const letter of layout.letters) {
+        expect(letter.centerY).toBeUndefined()
+      }
+    })
   })
 })

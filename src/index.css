@@ -387,6 +387,17 @@ body::after {
 @media (max-width: 640px) {
   .header {
     padding: 1rem 1.25rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+  }
+
+  .nav {
+    position: static;
+    transform: none;
+    order: -1;
+    width: 100%;
+    justify-content: center;
   }
 
   .social a,

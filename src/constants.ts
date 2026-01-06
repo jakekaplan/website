@@ -56,6 +56,10 @@ export const FADE_SPEED = 0.06 // ~280ms fade; keep .about-box animation-delay i
 
 // Layout
 export const GROUND_OFFSET = 48
+export const STACK_THRESHOLD = 0.85 // stack letters vertically when horizontal width exceeds this ratio
+export const STACKED_TRACKING = 0.85 // tighter letter spacing in stacked layout
+export const STACKED_FONT_SCALE = 1.3 // larger font in stacked layout
+export const STACKED_LINE_GAP = 0.15 // gap between lines as ratio of font size
 
 // Grab interaction
 export const GRAB_LIFT = 20
